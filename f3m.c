@@ -112,6 +112,7 @@ typedef struct vchn
 	int16_t priority;
 
 	int8_t vol;
+	uint8_t pan;
 
 	uint8_t vib_offs;
 	uint8_t rtg_count;
@@ -274,6 +275,11 @@ void f3m_player_init(player_s *player, mod_s *mod)
 		vchn->gxx_period = 0;
 		vchn->period = 0;
 		vchn->vol = 0;
+		vchn->pan = ((mod->mvol&0x80)==0)
+			? 0x8
+			: (mod->defpanFC == 0xFC
+				? ((const uint8_t *)(player->pat_para + mod->pat_num))[i]
+				: ((i&1)?0xC:0x3));
 
 		vchn->vib_offs = 0;
 		vchn->rtg_count = 0;
@@ -726,6 +732,14 @@ void f3m_effect_Sxx(player_s *player, vchn_s *vchn, int tick, int pefp, int lefp
 
 	switch(lefp>>4)
 	{
+		case 0x8:
+			if(tick == 0)
+			if((player->mod->mvol&0x80)!=0)
+			{
+				vchn->pan = lefp & 0x0F;
+			}
+			break;
+
 		case 0xC:
 			// TODO confirm SC0 behaviour
 			if(tick != 0 && (lefp&0x0F) == tick)
@@ -1047,6 +1061,12 @@ void f3m_player_play(player_s *player, int32_t *mbuf, uint8_t *obuf)
 #if F3M_CHNS == 2
 		int32_t lvol = vchn->vol;
 		int32_t rvol = vchn->vol;
+		if(vchn->pan < 0x8)
+		{
+			lvol = (lvol*vchn->pan*2)/15;
+		} else {
+			rvol = (lvol*(15-vchn->pan)*2)/15;
+		}
 #else
 		int32_t vol = vchn->vol;
 #endif
@@ -1192,8 +1212,14 @@ void f3m_player_play(player_s *player, int32_t *mbuf, uint8_t *obuf)
 		int32_t offs = vchn->offs;
 		int32_t suboffs = vchn->suboffs;
 		int32_t len = vchn->len;
-		int32_t lvol = vchn->vol;
-		int32_t rvol = vchn->vol;
+		int32_t lvol = vchn->vol<<7;
+		int32_t rvol = vchn->vol<<7;
+		if(vchn->pan < 0x8)
+		{
+			lvol = (lvol*(vchn->pan*2+1))/15;
+		} else {
+			rvol = (rvol*((15-vchn->pan)*2+1))/15;
+		}
 		const int32_t freq = vchn->freq;
 
 		if((vchn->offs & 1) == 0)
@@ -1206,8 +1232,8 @@ void f3m_player_play(player_s *player, int32_t *mbuf, uint8_t *obuf)
 			vchn->offs |= 1;
 		}
 
-		SPU_n_MVOL_L(i) = lvol<<7;
-		SPU_n_MVOL_R(i) = rvol<<7;
+		SPU_n_MVOL_L(i) = lvol;
+		SPU_n_MVOL_R(i) = rvol;
 		SPU_n_PITCH(i) = freq>>4;
 
 	}

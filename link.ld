@@ -6,9 +6,13 @@ SECTIONS
 	_LOADABLE_START_WHEAD = .;
 	.main : {
 		*(.boot)
+		. = ALIGN(8);
+		*(.rodata.cst8)
+		*(.rodata.cst4)
 		*(.text)
-		*(.rodata*)
-		*(.data)
+		*(.rodata)
+		*(.rodata.str1.4)
+		*(.data*)
 		_gp = ALIGN(16) + 0x7ff0;
 		*(.scommon)
 		*(.sdata)

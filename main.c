@@ -1,12 +1,13 @@
 #include <string.h>
 #include <stdint.h>
+#include <math.h>
 
 void update_music_status(int ins, int ins_num);
 
 #define PSX_IOBASE 0x00000000
 
-#define JOY_TX_DATA (*(volatile uint32_t *)(PSX_IOBASE + 0x1F801040))
-#define JOY_RX_DATA (*(volatile uint32_t *)(PSX_IOBASE + 0x1F801040))
+#define JOY_TX_DATA (*(volatile uint8_t *)(PSX_IOBASE + 0x1F801040))
+#define JOY_RX_DATA (*(volatile uint8_t *)(PSX_IOBASE + 0x1F801040))
 #define JOY_STAT (*(volatile uint32_t *)(PSX_IOBASE + 0x1F801044))
 #define JOY_MODE (*(volatile uint16_t *)(PSX_IOBASE + 0x1F801048))
 #define JOY_CTRL (*(volatile uint16_t *)(PSX_IOBASE + 0x1F80104A))
@@ -41,6 +42,23 @@ void update_music_status(int ins, int ins_num);
 #define SPU_MEM_CNT (*(volatile uint16_t *)(PSX_IOBASE + 0x1F801DAC))
 #define SPU_STAT (*(volatile uint16_t *)(PSX_IOBASE + 0x1F801DAE))
 
+#define PAD_SELECT 0x0001
+#define PAD_L3 0x0002
+#define PAD_R3 0x0004
+#define PAD_START 0x0008
+#define PAD_UP 0x0010
+#define PAD_RIGHT 0x0020
+#define PAD_DOWN 0x0040
+#define PAD_LEFT 0x0080
+#define PAD_L2 0x0100
+#define PAD_R2 0x0200
+#define PAD_L1 0x0400
+#define PAD_R1 0x0800
+#define PAD_T 0x1000
+#define PAD_O 0x2000
+#define PAD_X 0x4000
+#define PAD_S 0x8000
+
 #define busywait()
 
 #define TARGET_PSX
@@ -53,12 +71,12 @@ player_s s3mplayer;
 extern uint8_t fsys_rawcga[];
 //extern mod_s fsys_s3m_test[];
 
-#define InitHeap(a0, a1) ((void (*)(int, int, int))0xA0)(0x39, a0, a1);
+#define InitHeap(a0, a1) ((void (*)(int, int, int))0x000000A0)(0x39, a0, a1);
 #define malloc(a0) ((void *(*)(int, int))0xA0)(0x33, a0);
 #define free(a0) ((void (*)(int, int))0xA0)(0x34, a0);
 
 typedef int fixed;
-#define M_PI ((fixed)0x0003243F)
+#define FM_PI ((fixed)0x0003243F)
 
 int main(void);
 void yield(void);
@@ -76,6 +94,20 @@ void aaa_start(void)
 	//	_BSS_START[i] = 0;
 
 	//InitHeap(0x100000, 0x0F0000);
+	/*
+	// this code does work, no guarantees that it won't clobber things though
+	asm volatile (
+		"\tlui $4, 0x0010\n"
+		"\tlui $5, 0x000F\n"
+		"\tori $9, $zero, 0x39\n"
+		"\taddiu $sp, $sp, 0x10\n"
+		"\tori $2, $zero, 0x00A0\n"
+		"\tjalr $2\n"
+		"\tnop\n"
+		"\taddiu $sp, $sp, -0x10\n"
+	);
+	*/
+
 	I_MASK = 0;
 	main();
 
@@ -100,10 +132,13 @@ static fixed itofix(int v)
 
 static fixed fixmul(fixed a, fixed b)
 {
+	/*
 	int sign = (a^b)&0x80000000;
 
-	if((a&0x80000000) != 0) a = -a;
-	if((b&0x80000000) != 0) b = -b;
+	//if((a&0x80000000) != 0) a = -a;
+	//if((b&0x80000000) != 0) b = -b;
+	if(a<0) a = -a;
+	if(b<0) b = -b;
 
 	fixed al = (a & 0xFFFF);
 	fixed ah = (a >> 16) & 0x7FFF;
@@ -118,18 +153,24 @@ static fixed fixmul(fixed a, fixed b)
 	if(sign != 0) r = -r;
 
 	return r;
+	*/
+	float af = a;
+	float bf = b;
+	float rf = af*bf;
+	rf /= 65536.0f;
+	return (fixed)rf;
 }
 
 static fixed fixsin(fixed ang)
 {
 	int i;
 
-	// Clamp angle to 0 <= ang < 2 * M_PI
-	if(ang < 0) ang = ((M_PI*2) - (-ang) % (M_PI*2)) % (M_PI*2);
-	else ang = ang % (M_PI*2);
+	// Clamp angle to 0 <= ang < 2 * FM_PI
+	if(ang < 0) ang = ((FM_PI*2) - (-ang) % (FM_PI*2)) % (FM_PI*2);
+	else ang = ang % (FM_PI*2);
 
-	// Now wrap to -M_PI <= ang < M_PI
-	if(ang >= M_PI) ang -= M_PI*2;
+	// Now wrap to -FM_PI <= ang < FM_PI
+	if(ang >= FM_PI) ang -= FM_PI*2;
 
 	// Get sign bit and deal with corner
 	int sign = ang & 0x80000000;
@@ -144,7 +185,7 @@ static fixed fixsin(fixed ang)
 	fixed ret = acc1 - acc3 + acc5 - acc7;
 
 	// Invert if originally negative
-	//if(sign != 0) ret = -ret;
+	if(sign != 0) ret = -ret;
 
 	// Return!
 	return ret;
@@ -152,7 +193,7 @@ static fixed fixsin(fixed ang)
 
 static fixed fixcos(fixed ang)
 {
-	return fixsin(ang + (M_PI/2));
+	return fixsin(ang + (FM_PI/2));
 }
 
 void gpu_send_control_gp0(int v)
@@ -232,8 +273,29 @@ void gpu_push_vertex(int x, int y)
 	gpu_send_data((y<<16) | (x&0xFFFF));
 }
 
+uint8_t joy_swap(uint8_t data)
+{
+#if 1
+	// FIXME: THIS IS A TOTAL HACK
+	volatile int lag;
+	//for(lag = 0; lag < 30; lag++) {}
+	JOY_TX_DATA = data;
+	for(lag = 0; lag < 300; lag++) {}
+	//while((JOY_STAT & 0x0080) == 0) {}
+	uint8_t v = JOY_RX_DATA;
+	//while((JOY_STAT & 0x0080) != 0) {}
+	return v;
+#else
+	return 0xFF;
+#endif
+}
+
+float tri_ang = 0;
+uint16_t pad_old_data = 0xFFFF;
+
 static void update_frame(void)
 {
+	volatile int lag;
 	int i;
 
 	// Clear screen
@@ -241,6 +303,24 @@ static void update_frame(void)
 	gpu_send_control_gp0(0x02001D00);
 	gpu_send_data(0x00000000 + (screen_buffer<<16));
 	gpu_send_data((320) | ((240)<<16));
+
+	// Draw spinny triangle
+	gpu_send_control_gp1(0x01000000);
+	gpu_send_control_gp0(0x2000007F);
+	//gpu_push_vertex(-50, -50);
+	//gpu_push_vertex(50, -50);
+	//gpu_push_vertex(0, 50);
+	gpu_push_vertex(fixtoi(fixsin(tri_ang)*40), fixtoi(fixcos(tri_ang)*40));
+	gpu_push_vertex(fixtoi(fixsin(tri_ang + 2*FM_PI/3)*40), fixtoi(fixcos(tri_ang + 2*FM_PI/3)*40));
+	gpu_push_vertex(fixtoi(fixsin(tri_ang + 4*FM_PI/3)*40), fixtoi(fixcos(tri_ang + 4*FM_PI/3)*40));
+	/*
+	gpu_push_vertex((int)(sin(tri_ang)*40), (int)(cos(tri_ang)*40));
+	gpu_push_vertex((int)(sin(tri_ang + 2*M_PI/3)*40), (int)(cos(tri_ang + 2*M_PI/3)*40));
+	gpu_push_vertex((int)(sin(tri_ang + 4*M_PI/3)*40), (int)(cos(tri_ang + 4*M_PI/3)*40));
+	tri_ang += M_PI*2.0/60.0;
+	*/
+	tri_ang += FM_PI*2/180/2;
+	for(lag = 0; lag < 0x300; lag++) {}
 
 	// Draw string
 	gpu_send_control_gp1(0x01000000);
@@ -267,6 +347,71 @@ static void update_frame(void)
 		gpu_draw_texmask(8, 8, (test_char&31)<<3, 0);
 		gpu_send_control_gp0(0x757F7F7F);
 		gpu_push_vertex(i*8+16-160, 16+8*1-120);
+		gpu_send_data(0x001C0000);
+	}
+
+	// Read joypad
+	JOY_CTRL = 0x0003;
+	for(lag = 0; lag < 300; lag++) {}
+	uint8_t v0 = joy_swap(0x01);
+	uint8_t v1 = joy_swap(0x42);
+	uint8_t v2 = joy_swap(0x00);
+	uint8_t v3 = joy_swap(0x00);
+	uint8_t v4 = joy_swap(0x00);
+	JOY_CTRL = 0x0000;
+
+	uint16_t pad_id   = (((uint16_t)v2)<<8)|v1;
+	uint16_t pad_data = (((uint16_t)v4)<<8)|v3;
+	pad_data = ~pad_data;
+
+	if(((pad_data&~pad_old_data) & PAD_RIGHT) != 0)
+	{
+		if(s3mplayer.cord > s3mplayer.mod->ord_num-2)
+			s3mplayer.cord = s3mplayer.mod->ord_num-2;
+		s3mplayer.crow=64;
+		s3mplayer.ctick = s3mplayer.speed;
+	}
+
+	if(((pad_data&~pad_old_data) & PAD_LEFT) != 0)
+	{
+		s3mplayer.cord -= 2;
+		if(s3mplayer.cord < -1)
+			s3mplayer.cord = -1;
+		s3mplayer.crow=64;
+		s3mplayer.ctick = s3mplayer.speed;
+	}
+
+	pad_old_data = pad_data;
+
+	const char *pad_id_str = "Unknown";
+	switch(pad_id)
+	{
+		case 0x5A12:
+			// I've heard this one's rather buggy
+			pad_id_str = "Mouse - FUCK YOU";
+			break;
+		case 0x5A41:
+			pad_id_str = "Digital Pad";
+			break;
+		case 0x5A53:
+			pad_id_str = "Analogue Stick";
+			break;
+		case 0x5A73:
+			pad_id_str = "Analogue Pad";
+			break;
+		case 0xFFFF:
+			pad_id_str = "NOTHING";
+			break;
+	}
+
+	sprintf(update_str_buf, "joypad=%04X (%04X: %s)", pad_data, pad_id, pad_id_str);
+	for(i = 0; update_str_buf[i] != '\x00'; i++)
+	{
+		uint32_t test_char = update_str_buf[i];
+		gpu_send_control_gp0(0xE1080208 | ((test_char>>5)));
+		gpu_draw_texmask(8, 8, (test_char&31)<<3, 0);
+		gpu_send_control_gp0(0x757F7F7F);
+		gpu_push_vertex(i*8+16-160, 16+8*3-120);
 		gpu_send_data(0x001C0000);
 	}
 
@@ -391,6 +536,11 @@ int main(void)
 	screen_buffer = 0;
 	gpu_display_start(0, screen_buffer + 8);
 
+	// Set up joypad
+	JOY_CTRL = 0x0000;
+	JOY_MODE = 0x000D;
+	JOY_BAUD = 0x0088;
+
 	// Prep module
 	f3m_player_init(&s3mplayer, fsys_s3m_test);
 
@@ -415,11 +565,6 @@ int main(void)
 		f3m_player_play(&s3mplayer, NULL, NULL);
 		update_frame();
 	}
-
-	// Set up joypad
-	JOY_CTRL = 0x0000;
-	JOY_MODE = 0x000D;
-	JOY_BAUD = 0x0088;
 
 	for(;;)
 		yield();

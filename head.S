@@ -12,7 +12,8 @@
 
 	.word 0, 0
 	.word 0
-	.ascii "Sony Computer Entertainment Inc. for North America area"
+	/*.ascii "Sony Computer Entertainment Inc. for North America area"*/
+	.ascii "Sony Computer Entertainment Inc. for Europe area"
 	.align 11
 load_base:
 

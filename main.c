@@ -81,8 +81,8 @@ typedef int fixed;
 int main(void);
 void yield(void);
 
-extern uint8_t _BSS_START[];
-extern uint8_t _BSS_END[];
+extern volatile uint8_t _BSS_START[];
+extern volatile uint8_t _BSS_END[];
 
 int screen_buffer = 0;
 
@@ -90,8 +90,10 @@ void aaa_start(void)
 {
 	int i;
 
-	//for(i = 0; i < _BSS_START - _BSS_END; i++)
-	//	_BSS_START[i] = 0;
+	I_MASK = 0;
+
+	//memset(_BSS_START, 0, _BSS_END - _BSS_START);
+	//for(i = 0; i < _BSS_END - _BSS_START; i++) _BSS_START[i] = 0;
 
 	//InitHeap(0x100000, 0x0F0000);
 	/*
@@ -108,7 +110,6 @@ void aaa_start(void)
 	);
 	*/
 
-	I_MASK = 0;
 	main();
 
 	for(;;)
@@ -493,7 +494,8 @@ int main(void)
 	gpu_display_start(0, 8);
 
 	// Set display mode 
-	gpu_send_control_gp1(0x08000001);
+	//gpu_send_control_gp1(0x08000001); // NTSC
+	gpu_send_control_gp1(0x08000009); // PAL
 
 	// Set draw mode 
 	gpu_send_control_gp0(0xE6000000); gpu_send_control_gp0(0xE1000618); // Texpage

@@ -278,7 +278,7 @@ void f3m_player_init(player_s *player, mod_s *mod)
 		vchn->pan = ((mod->mvol&0x80)==0)
 			? 0x8
 			: (mod->defpanFC == 0xFC
-				? ((const uint8_t *)(player->pat_para + mod->pat_num))[i]
+				? ((const uint8_t *)(player->pat_para + mod->pat_num))[i] & 0xF
 				: ((i&1)?0xC:0x3));
 
 		vchn->vib_offs = 0;

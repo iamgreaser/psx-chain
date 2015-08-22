@@ -490,7 +490,8 @@ int main(void)
 	gpu_send_control_gp1(0x01000000);
 
 	// Set display area 
-	gpu_crtc_range(0x260, 0x88-(224/2), 320*8, 224);
+	//gpu_crtc_range(0x260, 0x88-(224/2), 320*8, 224); // NTSC
+	gpu_crtc_range(0x260, 0xA3-(224/2), 320*8, 224); // PAL
 	gpu_display_start(0, 8);
 
 	// Set display mode 

@@ -95,6 +95,6 @@ fsys_rawcga:
 	.align 5
 	.global fsys_s3m_test
 fsys_s3m_test:
-	.incbin "s2-cez.s3m"
+	.incbin "dat/s2-cez.s3m"
 	.align 5
 

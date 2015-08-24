@@ -5,7 +5,7 @@
 export EXE_NAME=boot
 export ISO_NAME=chaintest
 
-echo cc && mipsel-none-elf-gcc -c -fomit-frame-pointer -fno-stack-protector -G1 -O1 -msoft-float -nostdlib -mips1 -march=2000 -o obj/main.o main.c && \
+echo cc && mipsel-none-elf-gcc -c -fomit-frame-pointer -fno-stack-protector -G1 -O3 -msoft-float -nostdlib -mips1 -march=2000 -o obj/main.o main.c && \
 echo as && mipsel-none-elf-as -G1 -o obj/head.o head.S && \
 echo as-dbg && mipsel-none-elf-as -G1 -o obj/head-dbg.o --defsym _LOADABLE_SIZE=0x800 head.S && \
 echo ld-dbg && true mipsel-none-elf-gcc -msoft-float -o obj/${EXE_NAME}.dbg obj/head-dbg.o obj/main.o -L/usr/local/mipsel-none-elf/lib/soft-float/ -L/usr/local/lib/gcc/mipsel-none-elf/4.7.0/soft-float/ -lm -lc -lgcc -lnosys && \

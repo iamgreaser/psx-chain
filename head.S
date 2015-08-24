@@ -22,6 +22,10 @@ aaa_very_start:
 	/*lui $sp, 0x801F
 	ori $sp, $sp, 0xFF00*/
 
+	/* Load global pointer */
+	lui $gp, %hi(_gp)
+	ori $gp, $gp, %lo(_gp)
+
 	/* Jump to start */
 	jal aaa_start
 	nop

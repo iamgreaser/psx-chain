@@ -74,10 +74,10 @@ void init_tables(void)
 	// standard "fast-CRC" LUT except with a different polynomial
 	for(i=0; i <= 0xFF; i++)
 	{
-		int x = i;
+		uint32_t x = i;
 		for(j = 0; j <= 7; j++)
 		{
-			int carry = x&1;
+			uint32_t carry = x&1;
 			x >>= 1;
 
 			if(carry)
@@ -166,17 +166,19 @@ void calc_q_parity(uint8_t *sector)
 void adjust_edc(uint8_t *addr, int len)
 {
 	int i;
-	int x=0x00000000;
+	uint32_t x=0x00000000;
 
 	for(i=0; i <= len-1; i++)
 	{
-		x ^= addr[i];
+		x ^= (uint32_t)(uint8_t)addr[i];
 		x = (x>>8) ^ edc_table[x & 0xFF];
 	}
 
 	//append EDC value (little endian)
-	addr[0*2+len+0] = x & 0xFF;
-	addr[0*2+len+1] = x >> 8;
+	addr[0*4+len+0] = x >> 0;
+	addr[0*4+len+1] = x >> 8;
+	addr[0*4+len+2] = x >> 16;
+	addr[0*4+len+3] = x >> 24;
 }
 
 

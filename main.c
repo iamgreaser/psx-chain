@@ -215,6 +215,7 @@ void update_music_status(int ins, int ins_num)
 {
 	int i;
 	int scroll_len = ((320-20*2)*ins)/ins_num;
+	scroll_len &= ~0xF;
 
 	// Clear screen
 	gpu_send_control_gp0(0x024D0000);
@@ -222,19 +223,19 @@ void update_music_status(int ins, int ins_num)
 	gpu_send_data((320) | ((240)<<16));
 
 	// Draw status bar
-	if(scroll_len < 320)
+	if(scroll_len < 320-16*2)
 	{
 		gpu_send_control_gp1(0x01000000);
 		gpu_send_control_gp0(0x02000000);
-		gpu_send_data(0x00000000 + 20 + scroll_len + ((screen_buffer+120-5)<<16));
-		gpu_send_data((320-20*2-scroll_len) | ((10)<<16));
+		gpu_send_data(0x00000000 + 16 + scroll_len + ((screen_buffer+120-5)<<16));
+		gpu_send_data((320-16*2-scroll_len) | ((10)<<16));
 	}
 
 	if(scroll_len > 0)
 	{
 		gpu_send_control_gp1(0x01000000);
 		gpu_send_control_gp0(0x02007F00);
-		gpu_send_data(0x00000000 + 20 + ((screen_buffer+120-5)<<16));
+		gpu_send_data(0x00000000 + 16 + ((screen_buffer+120-5)<<16));
 		gpu_send_data((scroll_len) | ((10)<<16));
 	}
 

@@ -82,21 +82,29 @@ static void update_frame(void)
 	gpu_send_data(0x00000000 + (screen_buffer<<16));
 	gpu_send_data((320) | ((240)<<16));
 
+	// Set up camera matrix
+	mat4 mat_cam;
+	mat4_load_identity(&mat_cam);
+	mat4_rotate_z(&mat_cam, tri_ang);
+	mat4_translate_imm3(&mat_cam, 0, 0, 0x100);
+	gte_init_offset(0, 0, 120);
+	gte_loadmat_rot_full(&mat_cam);
+
 	// Draw spinny triangle
 	gpu_send_control_gp1(0x01000000);
 	gpu_send_control_gp0(0x2000007F);
-	//gpu_push_vertex(-50, -50);
-	//gpu_push_vertex(50, -50);
-	//gpu_push_vertex(0, 50);
-	gpu_push_vertex(fixtoi(fixsin(tri_ang)*40), fixtoi(fixcos(tri_ang)*40));
-	gpu_push_vertex(fixtoi(fixsin(tri_ang + 2*FM_PI/3)*40), fixtoi(fixcos(tri_ang + 2*FM_PI/3)*40));
-	gpu_push_vertex(fixtoi(fixsin(tri_ang + 4*FM_PI/3)*40), fixtoi(fixcos(tri_ang + 4*FM_PI/3)*40));
-	/*
-	gpu_push_vertex((int)(sin(tri_ang)*40), (int)(cos(tri_ang)*40));
-	gpu_push_vertex((int)(sin(tri_ang + 2*M_PI/3)*40), (int)(cos(tri_ang + 2*M_PI/3)*40));
-	gpu_push_vertex((int)(sin(tri_ang + 4*M_PI/3)*40), (int)(cos(tri_ang + 4*M_PI/3)*40));
-	tri_ang += M_PI*2.0/60.0;
-	*/
+	uint32_t xy0, xy1, xy2;
+	const vec3 tri_data[3] = {
+		{-50, -50, 0},
+		{ 50, -50, 0},
+		{  0,  50, 0},
+	};
+	gte_load_v012_vec3(&tri_data[0], &tri_data[1], &tri_data[2]);
+	gte_cmd_rtpt();
+	gte_save_s012xy_ui32_t(&xy0, &xy1, &xy2);
+	gpu_send_data(xy0);
+	gpu_send_data(xy1);
+	gpu_send_data(xy2);
 	tri_ang += FM_PI*2/180/2;
 	for(lag = 0; lag < 0x300; lag++) {}
 

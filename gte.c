@@ -1,4 +1,4 @@
-static const int gte_loss_invec = 9;
+static const int gte_loss_invec = 0;
 
 static uint32_t gte_get_flag(void)
 {
@@ -150,6 +150,19 @@ static void gte_save_s012_vec3(vec3 *v0, vec3 *v1, vec3 *v2)
 	(*v2)[0] = (fixed)((res2_xy<<16)>>16);
 	(*v2)[1] = (fixed)((res2_xy)>>16);
 	(*v2)[2] = (fixed)res2_z;
+}
+
+static void gte_save_s012xy_ui32_t(uint32_t *xy0, uint32_t *xy1, uint32_t *xy2)
+{
+	asm volatile(
+		"\tmfc2 %0, $12\n"
+		"\tmfc2 %1, $13\n"
+		"\tmfc2 %2, $14\n"
+		:
+		"=r"(*xy0),
+		"=r"(*xy1),
+		"=r"(*xy2)
+		::);
 }
 
 static void gte_cmd_rtps(void)

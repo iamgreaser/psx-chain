@@ -423,7 +423,7 @@ main (int argc, char *argv[])
 
 	rawFile = malloc (1024);
 	strcpy (rawFile, infile);
-	strcat (rawFile, ".raw");
+	strcat (rawFile, ".bin"); // NO$PSX doesn't actually check the filename properly and assumes bin
 	printf ("Output file: %s\n", rawFile);
 
 	cueFile = malloc (1024);

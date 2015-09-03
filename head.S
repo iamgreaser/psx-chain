@@ -32,27 +32,21 @@ aaa_very_start:
 	j aaa_very_start
 	nop
 
+	.global int_handler_stub
+	.global int_handler_stub_end
+int_handler_stub:
+	lui $k0, %hi(int_handler)
+	ori $k0, %lo(int_handler)
+	jr $k0
+int_handler_stub_end:
+
 int_handler:
-	.set noat
-	addiu $sp, $sp, -16*4
-	sw $ra, 0($sp)
-	jal pushall
-	nop
-	.set at
-
-	.set noat
-	jal popall
-	nop
-	lw $ra, 0($sp)
-	addiu $sp, $sp, 16*4
-	.set at
-	rfe
-	nop
-
-pushall:
+	/* Push all the things */
+	addiu $sp, $sp, -19*4-64
 	.set noat
 	sw $1, 4*1($sp)
 	.set at
+	sw $ra, 4*0($sp)
 	sw $2, 4*2($sp)
 	sw $3, 4*3($sp)
 	sw $4, 4*4($sp)
@@ -67,10 +61,41 @@ pushall:
 	sw $13, 4*13($sp)
 	sw $14, 4*14($sp)
 	sw $15, 4*15($sp)
-	jr $ra
+	sw $t8, 4*17($sp)
+	sw $t9, 4*18($sp)
+
+	mfc0 $t0, $14
+	sw $t0, 4*16($sp)
+
+	.extern isr_handler_c
+	mfc0 $a0, $12
+	mfc0 $a1, $13
+	mfc0 $a2, $14
+	jal isr_handler_c
+
+	/* Pop EPC */
+	lw $k0, 4*16($sp)
+
+	/* Offset - needed in some cases*/
+	/* Check for COP1 */
+	lw $t2, 0($k0)
+	lui $t0, 0xFE00
+	lui $t1, 0x4A00
+	and $t0, $t0, $t2
+	beq $t0, $t1, isr_handler_do_offset
+	nop
+	/* Check for SYSCALL */
+	ori $t1, $zero, 0x000C
+	bne $t2, $t1, isr_handler_skip_offset
 	nop
 
-popall:
+	/* Apply offset */
+isr_handler_do_offset:
+	addi $k0, $k0, 4
+isr_handler_skip_offset:
+
+	/* Pop all the things */
+	lw $ra, 4*0($sp)
 	lw $2, 4*2($sp)
 	lw $3, 4*3($sp)
 	lw $4, 4*4($sp)
@@ -85,10 +110,14 @@ popall:
 	lw $13, 4*13($sp)
 	lw $14, 4*14($sp)
 	lw $15, 4*15($sp)
+	lw $t8, 4*17($sp)
+	lw $t9, 4*18($sp)
 	.set noat
 	lw $1, 4*1($sp)
 	.set at
-	jr $ra
+	addiu $sp, $sp, 19*4+64
+	rfe /* assembler is currently set to reorder stuff into branch delay slot */
+	jr $k0
 	nop
 
 	.section ".rodata"

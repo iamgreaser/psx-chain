@@ -78,23 +78,6 @@ void gpu_push_vertex(int x, int y)
 	gpu_send_data((y<<16) | (x&0xFFFF));
 }
 
-uint8_t joy_swap(uint8_t data)
-{
-#if 1
-	// FIXME: THIS IS A TOTAL HACK
-	volatile int lag;
-	//for(lag = 0; lag < 30; lag++) {}
-	JOY_TX_DATA = data;
-	for(lag = 0; lag < 300; lag++) {}
-	//while((JOY_STAT & 0x0080) == 0) {}
-	uint8_t v = JOY_RX_DATA;
-	//while((JOY_STAT & 0x0080) != 0) {}
-	return v;
-#else
-	return 0xFF;
-#endif
-}
-
 static void screen_print(int x, int y, uint32_t c, const char *str)
 {
 	int i;

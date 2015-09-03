@@ -15,6 +15,7 @@ extern uint8_t fsys_rawcga[];
 #include "vec.c"
 #include "gpu.c"
 #include "gte.c"
+#include "joy.c"
 
 void update_music_status(int ins, int ins_num);
 
@@ -32,6 +33,40 @@ void yield(void);
 
 extern volatile uint8_t _BSS_START[];
 extern volatile uint8_t _BSS_END[];
+extern uint8_t int_handler_stub[];
+extern uint8_t int_handler_stub_end[];
+
+volatile int got_vblank = 0;
+int waiting_for_vblank = 0;
+volatile int playing_music = 0;
+void isr_handler_c(uint32_t cop0_sr, uint32_t cop0_cause, uint32_t cop0_epc)
+{
+	(void)cop0_sr;
+	(void)cop0_cause;
+	(void)cop0_epc;
+
+	//*(uint32_t *)0x801FFFFC = cop0_cause;
+	//*(uint32_t *)0x801FFFF8 = cop0_sr;
+
+	if((I_STAT & 0x0080) != 0)
+	{
+		while((JOY_STAT & 0x0080) != 0) {}
+		joy_update();
+
+		I_STAT &= ~0x0080;
+		I_MASK |= 0x0080;
+		JOY_CTRL |= 0x0010;
+		// TODO handle other joypad interrupts
+	}
+
+	if((I_STAT & 0x0001) != 0)
+	{
+		got_vblank++;
+		if(playing_music) f3m_player_play(&s3mplayer, NULL, NULL);
+		I_STAT &= ~0x0001;
+		I_MASK |= 0x0001;
+	}
+}
 
 void aaa_start(void)
 {
@@ -39,8 +74,29 @@ void aaa_start(void)
 
 	I_MASK = 0;
 
-	//memset(_BSS_START, 0, _BSS_END - _BSS_START);
-	//for(i = 0; i < _BSS_END - _BSS_START; i++) _BSS_START[i] = 0;
+	memset((void *)(_BSS_START), 0, _BSS_END - _BSS_START);
+	memcpy((void *)0x80000080, int_handler_stub,
+		int_handler_stub_end - int_handler_stub);
+
+	I_STAT = 0xFFFF;
+	I_MASK = 0x0001;
+	asm volatile (
+		"\tmfc0 $t0, $12\n"
+		"\tori $t0, 0x7F01\n"
+		"\tmtc0 $t0, $12\n"
+		/*
+		"\tmfc0 $t0, $13\n"
+		"\tori $t0, 0x0300\n"
+		"\tmtc0 $t0, $13\n"
+		*/
+		/*
+		"\tsyscall\n"
+		"\tnop\n"
+		"\tsyscall\n"
+		"\tnop\n"
+		*/
+		:::"t0"
+	);
 
 	//InitHeap(0x100000, 0x0F0000);
 	/*
@@ -69,7 +125,6 @@ void yield(void)
 }
 
 float tri_ang = 0;
-uint16_t pad_old_data = 0xFFFF;
 
 static void update_frame(void)
 {
@@ -137,18 +192,9 @@ static void update_frame(void)
 	}
 
 	// Read joypad
-	JOY_CTRL = 0x0003;
-	for(lag = 0; lag < 300; lag++) {}
-	uint8_t v0 = joy_swap(0x01);
-	uint8_t v1 = joy_swap(0x42);
-	uint8_t v2 = joy_swap(0x00);
-	uint8_t v3 = joy_swap(0x00);
-	uint8_t v4 = joy_swap(0x00);
-	JOY_CTRL = 0x0000;
-
-	uint16_t pad_id   = (((uint16_t)v2)<<8)|v1;
-	uint16_t pad_data = (((uint16_t)v4)<<8)|v3;
-	pad_data = ~pad_data;
+	pad_id   =  pad_id_now  ;
+	pad_data = ~pad_data_now;
+	joy_poll();
 
 	if(((pad_data&~pad_old_data) & PAD_RIGHT) != 0)
 	{
@@ -326,9 +372,7 @@ int main(void)
 	gpu_display_start(0, screen_buffer + 8);
 
 	// Set up joypad
-	JOY_CTRL = 0x0000;
-	JOY_MODE = 0x000D;
-	JOY_BAUD = 0x0088;
+	joy_init();
 
 	// Prep module
 	f3m_player_init(&s3mplayer, fsys_s3m_test);
@@ -345,13 +389,13 @@ int main(void)
 	TMR_n_MODE(2) = 0x0608;
 	k = TMR_n_MODE(2);
 
+	waiting_for_vblank = got_vblank;
+	playing_music = 1;
 	for(;;)
 	{
-		while((TMR_n_MODE(2) & 0x0800) == 0) {}
-		while((TMR_n_MODE(2) & 0x0800) != 0) {}
-		while((TMR_n_MODE(2) & 0x0800) == 0) {}
-		while((TMR_n_MODE(2) & 0x0800) != 0) {}
-		f3m_player_play(&s3mplayer, NULL, NULL);
+		while(waiting_for_vblank >= got_vblank) {}
+		waiting_for_vblank++;
+		//f3m_player_play(&s3mplayer, NULL, NULL);
 		update_frame();
 	}
 

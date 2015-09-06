@@ -78,7 +78,7 @@ GLvoid glRotatex(GLfixed theta, GLfixed x, GLfixed y, GLfixed z) // p35 2.9.2
 	GLfixed tcos = fixcos(theta);
 
 	// Generate rotation matrix
-	GLfixed itcos = -tcos;
+	GLfixed itcos = 0x10000-tcos;
 	GLfixed base_rot[3][3] = {
 		{
 			fixmulf(itcos, fixmulf(x, x))+tcos,

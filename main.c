@@ -144,10 +144,10 @@ static void update_frame(void)
 	glLoadIdentity();
 	glTranslatex(0, 0, 0x100);
 	glRotatex(tri_ang*360, 0, 0, 0x1000);
-	glTranslatex(0x40, 0, 0);
+	glTranslatex(0x100, 0, 0);
 	glRotatex(-tri_ang*360*3, 0, 0, 0x10000);
-	//glRotatef(tri_ang*60, 0, 0x1000, 0);
-	//glRotatef(0, 0, 0x10000, 0);
+	glRotatex(tri_ang*60, 0, 0x1000, 0);
+	//glRotatex(0, 0, 0x10000, 0);
 	gte_init_offset(0, 0, 120);
 
 	// Draw spinny triangle

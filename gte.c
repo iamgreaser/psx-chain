@@ -54,6 +54,36 @@ static void gte_loadmat_rot_full(mat4 *M)
 		: );
 }
 
+static void gte_loadmat_gl(GLfloat *MR, GLfloat *MT)
+{
+	asm volatile (
+		"\tctc2 %0, $0\n"
+		"\tctc2 %1, $1\n"
+		"\tctc2 %2, $2\n"
+		"\tctc2 %3, $3\n"
+		"\tctc2 %4, $4\n"
+		: :
+		"r"(((MR[0*3 + 0]>>4)&0xFFFF)|((MR[1*3 + 0]>>4)<<16)),
+		"r"(((MR[2*3 + 0]>>4)&0xFFFF)|((MR[0*3 + 1]>>4)<<16)),
+		"r"(((MR[1*3 + 1]>>4)&0xFFFF)|((MR[2*3 + 1]>>4)<<16)),
+		"r"(((MR[0*3 + 2]>>4)&0xFFFF)|((MR[1*3 + 2]>>4)<<16)),
+		"r"(MR[2*3 + 2]>>4)
+		: );
+
+	fixed tx_prep = MT[0]>>gte_loss_invec;
+	fixed ty_prep = MT[1]>>gte_loss_invec;
+	fixed tz_prep = MT[2]>>gte_loss_invec;
+	asm volatile (
+		"\tctc2 %0, $5\n"
+		"\tctc2 %1, $6\n"
+		"\tctc2 %2, $7\n"
+		: :
+		"r"(tx_prep),
+		"r"(ty_prep),
+		"r"(tz_prep)
+		: );
+}
+
 static void gte_load_v0_vec3(const vec3 *v)
 {
 	asm volatile (
@@ -85,6 +115,25 @@ static void gte_load_v012_vec3(const vec3 *v0, const vec3 *v1, const vec3 *v2)
 		"r"((((*v2)[0]>>gte_loss_invec)&0xFFFF)
 		|(((*v2)[1]>>gte_loss_invec)<<16)),
 		"r"((*v2)[2]>>gte_loss_invec)
+	);
+}
+
+static void gte_load_v012_gl(const uint32_t *v0, const uint32_t *v1, const uint32_t *v2)
+{
+	asm volatile (
+		"\tmtc2 %0, $0\n"
+		"\tmtc2 %1, $1\n"
+		"\tmtc2 %2, $2\n"
+		"\tmtc2 %3, $3\n"
+		"\tmtc2 %4, $4\n"
+		"\tmtc2 %5, $5\n"
+		: :
+		"r"(v0[0]),
+		"r"(v0[1]),
+		"r"(v1[0]),
+		"r"(v1[1]),
+		"r"(v2[0]),
+		"r"(v2[1])
 	);
 }
 

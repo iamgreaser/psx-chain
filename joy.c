@@ -53,6 +53,12 @@ void joy_poll(void)
 {
 	volatile int lag;
 
+	if(pad_stage == 5 && (JOY_STAT & 0x0002) != 0)
+	//if((JOY_STAT & 0x0002) != 0)
+	{
+		joy_update();
+	}
+
 	if(pad_stage == 0)
 	{
 		JOY_CTRL = 0x1003;
@@ -71,7 +77,7 @@ void joy_init(void)
 	// Enable joypad interrupt
 	I_STAT = ~0x0080;
 	I_MASK |=  0x0080;
-	//JOY_
+	JOY_CTRL |= 0x0010;
 
 	// Begin joypad read
 	joy_poll();

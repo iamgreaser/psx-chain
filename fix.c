@@ -96,6 +96,27 @@ static fixed fixsqrt(fixed v)
 	return ret;
 }
 
+static int32_t intsqrt(int32_t v)
+{
+	int i;
+
+	// WARNING: ASSUMES v IS POSITIVE
+
+	fixed ret = 0;
+	fixed ret2 = 0;
+	for(i = 15; i >= 1; i--)
+	{
+		fixed tret2 = ret2 + (1<<(i<<1));
+		if(tret2 <= v)
+		{
+			ret += (1<<i);
+			ret2 = tret2;
+		}
+	}
+
+	return ret;
+}
+
 static fixed fixisqrt(fixed v)
 {
 	// TODO: Proper inverse square root

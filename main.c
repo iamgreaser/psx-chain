@@ -4,7 +4,8 @@
 
 #include "psx.h"
 
-typedef int fixed;
+typedef int32_t fixed;
+typedef int64_t fixed64;
 typedef fixed vec3[3];
 typedef fixed vec4[4];
 typedef vec4 mat4[4];
@@ -12,10 +13,13 @@ typedef vec4 mat4[4];
 extern uint8_t fsys_rawcga[];
 
 #include "fix.c"
+#include "GL/gl.h"
+
 #include "vec.c"
 #include "gpu.c"
 #include "gte.c"
 #include "joy.c"
+#include "GL/gl.c"
 
 void update_music_status(int ins, int ins_num);
 
@@ -132,34 +136,29 @@ static void update_frame(void)
 	int i;
 
 	// Clear screen
-	//gpu_send_control_gp0((screen_buffer == 0 ? 0x027D7D7D : 0x024D4D4D));
-	gpu_send_control_gp0(0x02001D00);
-	gpu_send_data(0x00000000 + (screen_buffer<<16));
-	gpu_send_data((320) | ((240)<<16));
+	glClearColor(0x0000, 0x1D00, 0x1D00, 0x0000);
+	glClear(1);
 
 	// Set up camera matrix
-	mat4 mat_cam;
-	mat4_load_identity(&mat_cam);
-	mat4_rotate_z(&mat_cam, tri_ang);
-	mat4_translate_imm3(&mat_cam, 0, 0, 0x100);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glTranslatef(0, 0, 0x100);
+	glRotatef(tri_ang*360, 0, 0, 0x1000);
+	glTranslatef(0x40, 0, 0);
+	glRotatef(-tri_ang*360*3, 0, 0, 0x10000);
+	//glRotatef(tri_ang*60, 0, 0x1000, 0);
+	//glRotatef(0, 0, 0x10000, 0);
 	gte_init_offset(0, 0, 120);
-	gte_loadmat_rot_full(&mat_cam);
 
 	// Draw spinny triangle
 	gpu_send_control_gp1(0x01000000);
-	gpu_send_control_gp0(0x2000007F);
-	uint32_t xy0, xy1, xy2;
-	const vec3 tri_data[3] = {
-		{-50, -50, 0},
-		{ 50, -50, 0},
-		{  0,  50, 0},
-	};
-	gte_load_v012_vec3(&tri_data[0], &tri_data[1], &tri_data[2]);
-	gte_cmd_rtpt();
-	gte_save_s012xy_ui32_t(&xy0, &xy1, &xy2);
-	gpu_send_data(xy0);
-	gpu_send_data(xy1);
-	gpu_send_data(xy2);
+	glBegin(GL_TRIANGLES);
+		glColor3ub(0x7F, 0x00, 0x00);
+		glVertex3f(-50, -50, 0);
+		glVertex3f( 50, -50, 0);
+		glVertex3f(  0,  50, 0);
+	glEnd();
+
 	tri_ang += FM_PI*2/180/2;
 	for(lag = 0; lag < 0x300; lag++) {}
 
@@ -172,24 +171,8 @@ static void update_frame(void)
 		, s3mplayer.tempo
 		, s3mplayer.speed
 		);
-	for(i = 0; update_str_buf[i] != '\x00'; i++)
-	{
-		uint32_t test_char = update_str_buf[i];
-		gpu_send_control_gp0(0xE1080208 | ((test_char>>5)));
-		gpu_draw_texmask(8, 8, (test_char&31)<<3, 0);
-		gpu_send_control_gp0(0x757F7F7F);
-		gpu_push_vertex(i*8+16-160, 16-120);
-		gpu_send_data(0x001C0000);
-	}
-	for(i = 0; i < 27; i++)
-	{
-		uint32_t test_char = s3mplayer.mod->name[i];
-		gpu_send_control_gp0(0xE1080208 | ((test_char>>5)));
-		gpu_draw_texmask(8, 8, (test_char&31)<<3, 0);
-		gpu_send_control_gp0(0x757F7F7F);
-		gpu_push_vertex(i*8+16-160, 16+8*1-120);
-		gpu_send_data(0x001C0000);
-	}
+	screen_print(16, 16+8*0, 0x007F7F7F, update_str_buf);
+	screen_print(16, 16+8*1, 0x007F7F7F, s3mplayer.mod->name);
 
 	// Read joypad
 	pad_id   =  pad_id_now  ;
@@ -237,21 +220,15 @@ static void update_frame(void)
 	}
 
 	sprintf(update_str_buf, "joypad=%04X (%04X: %s)", pad_data, pad_id, pad_id_str);
-	for(i = 0; update_str_buf[i] != '\x00'; i++)
-	{
-		uint32_t test_char = update_str_buf[i];
-		gpu_send_control_gp0(0xE1080208 | ((test_char>>5)));
-		gpu_draw_texmask(8, 8, (test_char&31)<<3, 0);
-		gpu_send_control_gp0(0x757F7F7F);
-		gpu_push_vertex(i*8+16-160, 16+8*3-120);
-		gpu_send_data(0x001C0000);
-	}
+	screen_print(16, 16+8*3, 0x007F7F7F, update_str_buf);
+	sprintf(update_str_buf, "glGetError() = %X", glGetError());
+	screen_print(16, 16+8*5, 0x007F7F7F, update_str_buf);
 
 	while((GP1 & 0x10000000) == 0)
 		{}
 
 	// Flip pages
-	gpu_display_start(0, screen_buffer + 8);
+	gpu_display_start(0, screen_buffer);
 	screen_buffer = (screen_buffer == 0 ? 240 : 0);
 	gpu_draw_range(0, screen_buffer, 320, 240 + screen_buffer);
 	gpu_draw_offset(0 + 160, screen_buffer + 120);
@@ -302,7 +279,7 @@ void update_music_status(int ins, int ins_num)
 		{}
 
 	// Flip pages
-	gpu_display_start(0, screen_buffer + 8);
+	gpu_display_start(0, screen_buffer);
 	screen_buffer = (screen_buffer == 0 ? 240 : 0);
 	gpu_draw_range(0, screen_buffer, 320, 240 + screen_buffer);
 	gpu_draw_offset(0 + 160, screen_buffer + 120);
@@ -315,61 +292,7 @@ int main(void)
 	int x, y, xc, yc;
 
 	// Reset GPU 
-	gpu_send_control_gp1(0x00000000);
-
-	// Fix up DMA 
-	gpu_send_control_gp1(0x04000001);
-	gpu_send_control_gp1(0x01000000);
-
-	// Set display area 
-	//gpu_crtc_range(0x260, 0x88-(224/2), 320*8, 224); // NTSC
-	gpu_crtc_range(0x260, 0xA3-(224/2), 320*8, 224); // PAL
-	gpu_display_start(0, 8);
-
-	// Set display mode 
-	//gpu_send_control_gp1(0x08000001); // NTSC
-	gpu_send_control_gp1(0x08000009); // PAL
-
-	// Set draw mode 
-	gpu_send_control_gp0(0xE6000000); gpu_send_control_gp0(0xE1000618); // Texpage
-	gpu_draw_texmask(32, 32, 0, 0);
-	gpu_draw_range(0, 0, 320, 240);
-
-	// Copy CLUT to GPU
-	gpu_send_control_gp1(0x01000000);
-	gpu_send_control_gp0(0xA0000000);
-	//gpu_send_data(0x01F70000);
-	gpu_send_data(0x000001C0);
-	gpu_send_data(0x00010002);
-	//gpu_send_data(0x7FFF0001);
-	gpu_send_data(0x7FFF0000);
-
-	// Copy font to GPU
-	gpu_send_control_gp1(0x01000000);
-	gpu_send_control_gp0(0xA0000000);
-	gpu_send_data(0x00000200);
-	gpu_send_data(0x00080200);
-
-	for(y = 0; y < 8; y++)
-	for(x = 0; x < 256; x++)
-	{
-		uint32_t wdata = 0;
-		for(i = 0; i < 8; i++, wdata <<= 4)
-		if((fsys_rawcga[y+x*8]&(1<<i)) != 0)
-			wdata |= 0x1;
-
-		gpu_send_data(wdata);
-	}
-
-	// Enable display 
-	gpu_send_control_gp1(0x03000000);
-
-	// Clear screen 
-	gpu_send_control_gp0(0x027D7D7D);
-	gpu_send_data(0x00000000);
-	gpu_send_data((320) | ((240)<<16));
-	screen_buffer = 0;
-	gpu_display_start(0, screen_buffer + 8);
+	gpu_init();
 
 	// Set up joypad
 	joy_init();
@@ -378,16 +301,8 @@ int main(void)
 	f3m_player_init(&s3mplayer, fsys_s3m_test);
 
 	SPU_CNT = 0xC000;
-	SPU_MVOL_L = 0x3FFF;
-	SPU_MVOL_R = 0x3FFF;
-
-	// Set up timer
-	//TMR_n_TARGET(2) = 42300;//42336;
-	// pcsxr tends to get the timing wrong
-	TMR_n_TARGET(2) = 42336;
-	TMR_n_COUNT(2) = 0x0000;
-	TMR_n_MODE(2) = 0x0608;
-	k = TMR_n_MODE(2);
+	SPU_MVOL_L = 0x2000;
+	SPU_MVOL_R = 0x2000;
 
 	waiting_for_vblank = got_vblank;
 	playing_music = 1;

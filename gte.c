@@ -214,6 +214,20 @@ static void gte_save_s012xy_ui32_t(uint32_t *xy0, uint32_t *xy1, uint32_t *xy2)
 		::);
 }
 
+static int gte_get_side(void)
+{
+	int32_t mac0;
+
+	asm volatile (
+		"\tcop2 0x1400006\n" // NCLIP
+		"\tmfc2 %0, $24\n"
+		:
+		"=r"(mac0)
+		::);
+	
+	return mac0;
+}
+
 static void gte_cmd_rtps(void)
 {
 	asm volatile ("\tcop2 0x0180001\n");

@@ -144,9 +144,10 @@ static void update_frame(void)
 	glLoadIdentity();
 	glTranslatex(0, 0, 0x100);
 	glRotatex(tri_ang*360, 0, 0, 0x1000);
-	glTranslatex(0x100, 0, 0);
+	glTranslatex(0x80, 0, 0);
 	glRotatex(-tri_ang*360*3, 0, 0, 0x10000);
 	glRotatex(tri_ang*60, 0, 0x1000, 0);
+	glRotatex(tri_ang*200, 0, 0, 0x1000);
 	//glRotatex(0, 0, 0x10000, 0);
 	gte_init_offset(0, 0, 120);
 
@@ -154,9 +155,24 @@ static void update_frame(void)
 	gpu_send_control_gp1(0x01000000);
 	glBegin(GL_TRIANGLES);
 		glColor3ub(0x7F, 0x00, 0x00);
-		glVertex3x(-50, -50, 0);
-		glVertex3x( 50, -50, 0);
-		glVertex3x(  0,  50, 0);
+		glVertex3x(-50, -50,  0);
+		glVertex3x( 50, -50,  0);
+		glVertex3x(  0,  50,  0);
+
+		glColor3ub(0x00, 0x7F, 0x00);
+		glVertex3x(  0,   0, 70);
+		glVertex3x( 50, -50,  0);
+		glVertex3x(-50, -50,  0);
+
+		glColor3ub(0x00, 0x00, 0x7F);
+		glVertex3x(  0,   0, 70);
+		glVertex3x(-50, -50,  0);
+		glVertex3x(  0,  50,  0);
+
+		glColor3ub(0x7F, 0x7F, 0x7F);
+		glVertex3x(  0,   0, 70);
+		glVertex3x(  0,  50,  0);
+		glVertex3x( 50, -50,  0);
 	glEnd();
 
 	tri_ang += FM_PI*2/180/2;

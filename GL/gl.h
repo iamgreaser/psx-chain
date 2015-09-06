@@ -3,6 +3,7 @@
 // NOTE: page references are PDF pages in glspec.pdf, not the printed page numbers!
 
 // standard types (p19, 2.4 Basic GL Operation)
+// (fixed point types are from the GLES 1.1.12 spec)
 typedef void GLvoid;
 typedef uint8_t GLboolean;
 typedef int8_t GLbyte;
@@ -14,12 +15,12 @@ typedef uint32_t GLuint;
 typedef int32_t GLenum;
 typedef size_t GLsizei;
 typedef uint32_t GLbitfield;
-// these use fixeds simply because they are MUCH faster
-// accuracy issues? pfft, who cares about those?
-typedef fixed GLfloat;
-typedef fixed GLclampf;
-typedef fixed64 GLdouble;
-typedef fixed64 GLclampd;
+typedef float GLfloat;
+typedef float GLclampf;
+typedef double GLdouble;
+typedef double GLclampd;
+typedef fixed GLfixed;
+typedef fixed GLclampx;
 
 #define GLtrue  1
 #define GLfalse 0
@@ -60,7 +61,7 @@ GLvoid glBegin(GLenum mode); // p24 2.6.1
 GLvoid glEnd(GLvoid); // p24 2.6.1
 
 // clear
-GLvoid glClearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+GLvoid glClearColorx(GLfixed r, GLfixed g, GLfixed b, GLfixed a);
 GLvoid glClear(GLbitfield mask);
 
 // error
@@ -69,8 +70,8 @@ GLenum glGetError(GLvoid); // p20 2.5
 // matrix
 GLvoid glLoadIdentity(GLvoid); // p35 2.9.2
 GLvoid glMatrixMode(GLenum mode); // p34 2.9.2
-GLvoid glRotatef(GLfloat theta, GLfloat x, GLfloat y, GLfloat z); // p35 2.9.2
-GLvoid glTranslatef(GLfloat x, GLfloat y, GLfloat z); // p36 2.9.2
+GLvoid glRotatex(GLfixed theta, GLfixed x, GLfixed y, GLfixed z); // p35 2.9.2
+GLvoid glTranslatex(GLfixed x, GLfixed y, GLfixed z); // p36 2.9.2
 GLvoid glPushMatrix(GLvoid); // p37 2.9.2
 GLvoid glPopMatrix(GLvoid); // p37 2.9.2
 

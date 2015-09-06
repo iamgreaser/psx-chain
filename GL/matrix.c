@@ -17,9 +17,11 @@ GLvoid glLoadIdentity(GLvoid) // p35 2.9.2
 {
 	GLsizei i, j;
 
+	gl_mat_gte_isdirty = 1;
+
 	GLint stackidx = gl_mat_stack[gl_mat_cur];
-	GLfloat *rot = gl_mat_rot[gl_mat_cur][stackidx];
-	GLfloat *trn = gl_mat_trn[gl_mat_cur][stackidx];
+	GLfixed *rot = gl_mat_rot[gl_mat_cur][stackidx];
+	GLfixed *trn = gl_mat_trn[gl_mat_cur][stackidx];
 
 	for(i = 0; i < 3; i++)
 	for(j = 0; j < 3; j++)
@@ -37,7 +39,7 @@ GLvoid glMatrixMode(GLenum mode) // p34 2.9.2
 		gl_internal_set_error(GL_INVALID_ENUM);
 }
 
-GLvoid glRotatef(GLfloat theta, GLfloat x, GLfloat y, GLfloat z) // p35 2.9.2
+GLvoid glRotatex(GLfixed theta, GLfixed x, GLfixed y, GLfixed z) // p35 2.9.2
 {
 	int i, j, k;
 
@@ -47,11 +49,13 @@ GLvoid glRotatef(GLfloat theta, GLfloat x, GLfloat y, GLfloat z) // p35 2.9.2
 	if(x == 0 && y == 0 && z == 0)
 		return;
 
+	gl_mat_gte_isdirty = 1;
+
 	// Normalise x,y,z
-	GLfloat vlen2 = fixmul(x,x) + fixmul(y,y) + fixmul(z,z);
+	GLfixed vlen2 = fixmul(x,x) + fixmul(y,y) + fixmul(z,z);
 	if(vlen2 >= 0x100)
 	{
-		GLfloat vlen = fixsqrt(vlen2);
+		GLfixed vlen = fixsqrt(vlen2);
 		x = fixdiv(x, vlen);
 		y = fixdiv(y, vlen);
 		z = fixdiv(z, vlen);
@@ -61,7 +65,7 @@ GLvoid glRotatef(GLfloat theta, GLfloat x, GLfloat y, GLfloat z) // p35 2.9.2
 
 		// FIXME get this working correctly
 		vlen2 = x*x + y*y + z*z;
-		GLfloat vlen = fixsqrt(vlen2)<<8;
+		GLfixed vlen = fixsqrt(vlen2)<<8;
 		x = fixdiv(x, vlen);
 		y = fixdiv(y, vlen);
 		z = fixdiv(z, vlen);
@@ -70,12 +74,12 @@ GLvoid glRotatef(GLfloat theta, GLfloat x, GLfloat y, GLfloat z) // p35 2.9.2
 
 	// Get sin/cos
 	theta /= 360;
-	GLfloat tsin = fixsin(theta);
-	GLfloat tcos = fixcos(theta);
+	GLfixed tsin = fixsin(theta);
+	GLfixed tcos = fixcos(theta);
 
 	// Generate rotation matrix
-	GLfloat itcos = -tcos;
-	GLfloat base_rot[3][3] = {
+	GLfixed itcos = -tcos;
+	GLfixed base_rot[3][3] = {
 		{
 			fixmulf(itcos, fixmulf(x, x))+tcos,
 			fixmulf(itcos, fixmulf(x, y))-fixmulf(tsin, z),
@@ -95,19 +99,19 @@ GLvoid glRotatef(GLfloat theta, GLfloat x, GLfloat y, GLfloat z) // p35 2.9.2
 
 	// Apply rotation matrix
 	GLint stackidx = gl_mat_stack[gl_mat_cur];
-	GLfloat *rot = gl_mat_rot[gl_mat_cur][stackidx];
-	GLfloat *trn = gl_mat_trn[gl_mat_cur][stackidx];
-	GLfloat oldrot[9];
-	GLfloat oldtrn[3];
-	memcpy(oldrot, rot, sizeof(GLfloat)*9);
-	memcpy(oldtrn, trn, sizeof(GLfloat)*3);
+	GLfixed *rot = gl_mat_rot[gl_mat_cur][stackidx];
+	GLfixed *trn = gl_mat_trn[gl_mat_cur][stackidx];
+	GLfixed oldrot[9];
+	GLfixed oldtrn[3];
+	memcpy(oldrot, rot, sizeof(GLfixed)*9);
+	memcpy(oldtrn, trn, sizeof(GLfixed)*3);
 
 	// FIXME: translate properly
 	// FIXME: ensure correct order
 	for(i = 0; i < 3; i++)
 	for(j = 0; j < 3; j++)
 	{
-		GLfloat sum = 0;
+		GLfixed sum = 0;
 		for(k = 0; k < 3; k++)
 			//sum += fixmulf(oldrot[3*i + k], base_rot[k][j]);
 			sum += fixmulf(oldrot[3*k + j], base_rot[i][k]);
@@ -117,7 +121,7 @@ GLvoid glRotatef(GLfloat theta, GLfloat x, GLfloat y, GLfloat z) // p35 2.9.2
 
 	for(i = 0; i < 3; i++)
 	{
-		GLfloat sum = 0;
+		GLfixed sum = 0;
 		for(k = 0; k < 3; k++)
 			sum += fixmulf(oldtrn[k], rot[k*3 + i]);
 			//sum += fixmulf(oldtrn[k], rot[i*3 + k]);
@@ -128,15 +132,17 @@ GLvoid glRotatef(GLfloat theta, GLfloat x, GLfloat y, GLfloat z) // p35 2.9.2
 	}
 }
 
-GLvoid glTranslatef(GLfloat x, GLfloat y, GLfloat z) // p36 2.9.2
+GLvoid glTranslatex(GLfixed x, GLfixed y, GLfixed z) // p36 2.9.2
 {
 	int i, j;
 
-	GLint stackidx = gl_mat_stack[gl_mat_cur];
-	GLfloat *rot = gl_mat_rot[gl_mat_cur][stackidx];
-	GLfloat *trn = gl_mat_trn[gl_mat_cur][stackidx];
+	gl_mat_gte_isdirty = 1;
 
-	GLfloat xyz[3] = {x, y, z};
+	GLint stackidx = gl_mat_stack[gl_mat_cur];
+	GLfixed *rot = gl_mat_rot[gl_mat_cur][stackidx];
+	GLfixed *trn = gl_mat_trn[gl_mat_cur][stackidx];
+
+	GLfixed xyz[3] = {x, y, z};
 
 	for(i = 0; i < 3; i++)
 	for(j = 0; j < 3; j++)
@@ -163,10 +169,10 @@ GLvoid glPushMatrix(GLvoid) // p37 2.9.2
 	GLint stackidx = gl_mat_stack[gl_mat_cur];
 	memcpy( gl_mat_rot[gl_mat_cur][stackidx+1],
 		gl_mat_rot[gl_mat_cur][stackidx+0],
-		sizeof(GLfloat)*9);
+		sizeof(GLfixed)*9);
 	memcpy( gl_mat_trn[gl_mat_cur][stackidx+1],
 		gl_mat_trn[gl_mat_cur][stackidx+0],
-		sizeof(GLfloat)*3);
+		sizeof(GLfixed)*3);
 
 	// Push
 	gl_mat_stack[gl_mat_cur]++;
@@ -180,6 +186,8 @@ GLvoid glPopMatrix(GLvoid) // p37 2.9.2
 		gl_internal_set_error(GL_STACK_UNDERFLOW);
 		return;
 	}
+
+	gl_mat_gte_isdirty = 1;
 
 	// Pop
 	gl_mat_stack[gl_mat_cur]--;

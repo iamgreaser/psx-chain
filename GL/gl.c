@@ -22,8 +22,8 @@ GLvoid gl_internal_set_error(GLenum error);
 
 // matrix
 #define GLINTERNAL_MAX_MATRIX_STACK 10
-static GLfloat gl_mat_rot[3][GLINTERNAL_MAX_MATRIX_STACK][9];
-static GLfloat gl_mat_trn[3][GLINTERNAL_MAX_MATRIX_STACK][3];
+static GLfixed gl_mat_rot[3][GLINTERNAL_MAX_MATRIX_STACK][9];
+static GLfixed gl_mat_trn[3][GLINTERNAL_MAX_MATRIX_STACK][3];
 static GLint gl_mat_stack[3] = {0, 0, 0};
 static GLint gl_mat_cur = 0;
 static GLboolean gl_mat_gte_isdirty = GLtrue;

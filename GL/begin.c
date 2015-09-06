@@ -86,7 +86,7 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 	// TODO: colours and textures and whatnot
 }
 
-GLvoid glVertex3f(GLfloat x, GLfloat y, GLfloat z)
+GLvoid glVertex3x(GLfixed x, GLfixed y, GLfixed z)
 {
 	uint32_t sxy = (((GLuint)(GLushort)y)<<16)|((GLuint)(GLushort)x);
 	uint32_t sz = (uint32_t)(GLint)(GLshort)z;

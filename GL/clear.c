@@ -1,4 +1,4 @@
-GLvoid glClearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a)
+GLvoid glClearColorx(GLfixed r, GLfixed g, GLfixed b, GLfixed a)
 {
 	gl_clear_color_ub[0] = (r + (1<<7))>>8;
 	gl_clear_color_ub[1] = (g + (1<<7))>>8;

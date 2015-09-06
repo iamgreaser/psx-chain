@@ -136,16 +136,16 @@ static void update_frame(void)
 	int i;
 
 	// Clear screen
-	glClearColor(0x0000, 0x1D00, 0x1D00, 0x0000);
+	glClearColorx(0x0000, 0x1D00, 0x1D00, 0x0000);
 	glClear(1);
 
 	// Set up camera matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glTranslatef(0, 0, 0x100);
-	glRotatef(tri_ang*360, 0, 0, 0x1000);
-	glTranslatef(0x40, 0, 0);
-	glRotatef(-tri_ang*360*3, 0, 0, 0x10000);
+	glTranslatex(0, 0, 0x100);
+	glRotatex(tri_ang*360, 0, 0, 0x1000);
+	glTranslatex(0x40, 0, 0);
+	glRotatex(-tri_ang*360*3, 0, 0, 0x10000);
 	//glRotatef(tri_ang*60, 0, 0x1000, 0);
 	//glRotatef(0, 0, 0x10000, 0);
 	gte_init_offset(0, 0, 120);
@@ -154,9 +154,9 @@ static void update_frame(void)
 	gpu_send_control_gp1(0x01000000);
 	glBegin(GL_TRIANGLES);
 		glColor3ub(0x7F, 0x00, 0x00);
-		glVertex3f(-50, -50, 0);
-		glVertex3f( 50, -50, 0);
-		glVertex3f(  0,  50, 0);
+		glVertex3x(-50, -50, 0);
+		glVertex3x( 50, -50, 0);
+		glVertex3x(  0,  50, 0);
 	glEnd();
 
 	tri_ang += FM_PI*2/180/2;

@@ -54,7 +54,7 @@ static void gte_loadmat_rot_full(mat4 *M)
 		: );
 }
 
-static void gte_loadmat_gl(GLfloat *MR, GLfloat *MT)
+static void gte_loadmat_gl(GLfixed *MR, GLfixed *MT)
 {
 	asm volatile (
 		"\tctc2 %0, $0\n"

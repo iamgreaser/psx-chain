@@ -25,7 +25,6 @@ CFLAGS = -g -c -O3 -flto -pipe \
 LDFLAGS = -g -Wl,-T,link.ld -O1 -flto -pipe \
 	-mtune=3000 -march=3000 \
 	\
-	\
 	-funroll-loops \
 	\
 	-fthread-jumps \

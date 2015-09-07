@@ -77,7 +77,7 @@ GLvoid glRotatex(GLfixed theta, GLfixed x, GLfixed y, GLfixed z) // p35 2.9.2
 		GLfixed *rot = gl_mat_rot[gl_mat_cur][stackidx];
 
 		// Get sin/cos
-		theta /= 360;
+		//theta /= 360; // dropping the "degrees" requirement, using direct angles instead
 		GLfixed tsin = fixsin(theta);
 		GLfixed tcos = fixcos(theta);
 

@@ -23,13 +23,24 @@ void dma_init_block(void)
 		dma_end = DMA_QUEUE_OT+1;
 
 	// Set up order table
-	// XXX: investigate into possibly making DMA6 do this
+	// note, the pv = whatever "optimisation" actually makes it slower
 	dma_run = dma_end-1;
 	dma_ot = dma_end-DMA_QUEUE_OT;
-	dma_queue[dma_ot-1] = 0x00FFFFFF;
 	dma_post_tail = &dma_queue[dma_ot-1];
-	for(i = 0; i < DMA_QUEUE_OT; i++)
+	dma_queue[dma_ot-1] = 0x00FFFFFF;
+	//uint32_t pv = 0x00FFFFFF&(uint32_t)&dma_queue[dma_ot-1];
+	for(i = 0; i < DMA_QUEUE_OT; i++)//, pv += 4)
 		dma_queue[dma_ot+i] = 0x00FFFFFF&(uint32_t)&dma_queue[dma_ot+i-1];
+		//dma_queue[dma_ot+i] = pv;
+
+	// for some reason DMA6 seems to be slower?
+	/*
+	DMA_DPCR &= ~0xF000000;
+	DMA_n_BCR(6) = DMA_QUEUE_OT+1;
+	DMA_n_MADR(6) = 0x00FFFFFF & (uint32_t)&dma_queue[dma_run];
+	DMA_n_CHCR(6) = 0x11000002;
+	DMA_DPCR |=  0x8000000;
+	*/
 }
 
 void dma_init(void)
@@ -58,6 +69,10 @@ void dma_flush(void)
 	// TODO: queue these flush requests
 	// Wait until finished
 	dma_wait();
+
+	// Check if we even have a second block
+	if(dma_run == dma_end-1)
+		return;
 
 	// Send DMA data
 	DMA_n_MADR(2) = 0x00FFFFFF & (uint32_t)&dma_queue[dma_run];

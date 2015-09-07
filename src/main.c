@@ -128,7 +128,8 @@ void yield(void)
 	// TODO: halt 
 }
 
-float tri_ang = 0;
+fixed tri_ang = 0;
+int tmr_dmaend = 0;
 
 static void update_frame(void)
 {
@@ -136,6 +137,17 @@ static void update_frame(void)
 	int i;
 
 	int tmr_frame = TMR_n_COUNT(1);
+
+	// Finish drawing
+	glFinish();
+
+	int tmr_dmafin = TMR_n_COUNT(1);
+
+	// Flip pages
+	gpu_display_start(0, screen_buffer);
+	screen_buffer = (screen_buffer == 0 ? 240 : 0);
+	gpu_draw_range(0, screen_buffer, 320, 240 + screen_buffer);
+	gpu_draw_offset(0 + 160, screen_buffer + 120);
 
 	// Enable things
 	glEnable(GL_CULL_FACE);
@@ -149,13 +161,13 @@ static void update_frame(void)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glTranslatex(0, 0, 0x100);
-	glRotatex(tri_ang*360, 0, 0, 0x1000);
-	glRotatex(tri_ang*60, 0, 0x1000, 0);
+	glRotatex(tri_ang, 0, 0, 0x1000);
+	glRotatex(tri_ang/6, 0, 0x1000, 0);
 	//glRotatex(0, 0, 0x10000, 0);
 
-	// Draw spinny triangle
+	// Draw spinny simplex
 	//gpu_send_control_gp1(0x01000000);
-	int q = 80;
+	int q = 100;
 	for(i = 0; i < q; i++)
 	{
 		glPushMatrix();
@@ -163,11 +175,11 @@ static void update_frame(void)
 		// TODO: implement the damn things
 		// TODO: make said damn things precalculate a matrix (MVMVA should help)
 		// TODO: make malloc() behave so that display lists can make sense
-		glRotatex((((360<<12)*i)/q)<<4, 0, 0, 0x1000);
+		glRotatex((((1<<16)*i)/q), 0, 0, 0x1000);
 		glTranslatex(0x80, 0, 0);
-		glRotatex(-tri_ang*360*3, 0, 0, 0x10000);
-		glRotatex(tri_ang*60, 0, 0x1000, 0);
-		glRotatex(tri_ang*200, 0, 0, 0x1000);
+		glRotatex(-tri_ang*3, 0, 0, 0x10000);
+		glRotatex(tri_ang/6, 0, 0x1000, 0);
+		glRotatex(tri_ang/2, 0, 0, 0x1000);
 		glBegin(GL_TRIANGLES);
 			glColor3ub(0x7F, 0x00, 0x00);
 			glVertex3x(-50, -50,  0);
@@ -261,30 +273,31 @@ static void update_frame(void)
 	screen_print(16, 16+8*3, 0x007F7F7F, update_str_buf);
 	sprintf(update_str_buf, "glGetError() = %X", (unsigned)glGetError());
 	screen_print(16, 16+8*5, 0x007F7F7F, update_str_buf);
-	sprintf(update_str_buf, "dma beg = %i", (int)TMR_n_COUNT(1));
+	sprintf(update_str_buf, "dma end = %i", (int)tmr_dmaend);
+	screen_print(16, 16+8*7, 0x007F7F7F, update_str_buf);
+	sprintf(update_str_buf, "fra beg = %i", (int)tmr_frame);
 	screen_print(16, 16+8*8, 0x007F7F7F, update_str_buf);
+	sprintf(update_str_buf, "dma fin = %i", (int)tmr_dmafin);
+	screen_print(16, 16+8*9, 0x007F7F7F, update_str_buf);
+	sprintf(update_str_buf, "dma beg = %i", (int)TMR_n_COUNT(1));
+	screen_print(16, 16+8*10, 0x007F7F7F, update_str_buf);
+	sprintf(update_str_buf, "fra lag = %i", (int)(got_vblank - waiting_for_vblank));
+	screen_print(16, 16+8*11, 0x007F7F7F, update_str_buf);
 
 	// Flush DMA
-	glFinish();
+	glFlush();
+	tmr_dmaend = TMR_n_COUNT(1);
 
+	/*
 	// Get actual render time
-	sprintf(update_str_buf, "dma end = %i", (int)TMR_n_COUNT(1));
-	screen_print(16, 16+8*9, 0x007F7F7F, update_str_buf);
-	sprintf(update_str_buf, "fra beg = %i", (int)tmr_frame);
-	screen_print(16, 16+8*7, 0x007F7F7F, update_str_buf);
 	//sprintf(update_str_buf, "malloc test = %p", NULL);//malloc(5));
 	//screen_print(16, 16+8*11, 0x007F7F7F, update_str_buf);
 	//sprintf(update_str_buf, "malloc test = %p", malloc(102));
 	//screen_print(16, 16+8*12, 0x007F7F7F, update_str_buf);
 	glFinish();
+	*/
 
 	//while((GP1 & 0x10000000) == 0) {}
-
-	// Flip pages
-	gpu_display_start(0, screen_buffer);
-	screen_buffer = (screen_buffer == 0 ? 240 : 0);
-	gpu_draw_range(0, screen_buffer, 320, 240 + screen_buffer);
-	gpu_draw_offset(0 + 160, screen_buffer + 120);
 }
 
 void update_music_status(int ins, int ins_num)
@@ -363,9 +376,11 @@ int main(void)
 	for(;;)
 	{
 		while(waiting_for_vblank >= got_vblank) {}
+		int tmp_wait = got_vblank;
 		waiting_for_vblank++;
 		//f3m_player_play(&s3mplayer, NULL, NULL);
 		update_frame();
+		waiting_for_vblank = tmp_wait;
 	}
 
 	for(;;)

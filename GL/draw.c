@@ -53,8 +53,19 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 		"=r"(*(uint32_t *)xy2)
 		::);
 
-	// TODO: z-order
+	// Get Z order
 	int32_t otz = -1;
+	if(gl_enable_depth_test)
+	{
+		// TODO: z-clip
+		// Get average Z
+		asm volatile (
+			"\tcop2 0x158002D\n" // AVSZ3
+			"\tmfc2 %0, $7\n"
+			:
+			"=r"(otz)
+			::);
+	}
 
 	// Split into subtypes
 	if(gl_begin_gourcount != 0)

@@ -7,7 +7,7 @@ static uint32_t gte_get_flag(void)
 	return ret;
 }
 
-static void gte_init_offset(int ofx, int ofy, int h)
+static void gte_init(int ofx, int ofy, int h, int otzmax)
 {
 	asm volatile (
 		"\tctc2 %0, $24\n"
@@ -19,8 +19,8 @@ static void gte_init_offset(int ofx, int ofy, int h)
 		"r"(ofx), // OFX
 		"r"(ofy), // OFY
 		"r"(h), // H
-		"r"(0x1000/3), // ZSF3
-		"r"(0x1000/4) // ZSF4
+		"r"(otzmax/0x30), // ZSF3
+		"r"(otzmax/0x40) // ZSF4
 		: );
 }
 

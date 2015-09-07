@@ -21,8 +21,8 @@ static GLubyte gl_clear_color_ub[4] = {0, 0, 0, 0};
 GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2);
 
 // enable
-static GLboolean gl_enable_cull_face = GL_TRUE;
-static GLboolean gl_enable_depth_test = GL_TRUE;
+static GLboolean gl_enable_cull_face = GL_FALSE;
+static GLboolean gl_enable_depth_test = GL_FALSE;
 
 // error
 static GLenum gl_error = GL_NO_ERROR;

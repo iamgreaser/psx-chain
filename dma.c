@@ -76,14 +76,22 @@ void dma_send_prim(uint32_t count, uint32_t *data, int32_t otz)
 	memcpy(&dma_queue[dma_end-count], data, sizeof(uint32_t)*count);
 
 	// Chain
-	// TODO: use order table when OTZ non-negative
-	dma_queue[dma_end-(count+1)] = (0x00FFFFFF) | (count<<24);
-	*dma_post_tail = (*dma_post_tail & 0xFF000000)
-		| ((uint32_t)&dma_queue[dma_end-(count+1)] & 0x00FFFFFF);
-	dma_post_tail = &dma_queue[dma_end-(count+1)];
+	if(otz < 0)
+	{
+		// Painters algorithm, draw in front
+		dma_queue[dma_end-(count+1)] = (0x00FFFFFF) | (count<<24);
+		*dma_post_tail = (*dma_post_tail & 0xFF000000)
+			| ((uint32_t)&dma_queue[dma_end-(count+1)] & 0x00FFFFFF);
+		dma_post_tail = &dma_queue[dma_end-(count+1)];
 
-	//otz &= DMA_QUEUE_MAX_MASK;
-	//dma_queue[dma_end-(count+1)] = (0x00FFFFFF & dma_queue[dma_ot+otz]) | (count<<24);
+	} else {
+		// Order table
+		otz &= DMA_QUEUE_MAX_MASK;
+		dma_queue[dma_end-(count+1)] = dma_queue[dma_ot+otz] | (count<<24);
+		dma_queue[dma_ot+otz] = (0x00FFFFFF & (uint32_t)&dma_queue[dma_end-(count+1)]);
+
+	}
+
 
 	// TODO: shove this into DMA
 	/*

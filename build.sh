@@ -5,14 +5,15 @@
 export EXE_NAME=boot
 export ISO_NAME=chaintest
 
+#echo ld && mipsel-none-elf-ld -g -T link.ld -o obj/${EXE_NAME}.elf obj/head.o obj/main.o -L/usr/local/mipsel-none-elf/lib/soft-float/ -L/usr/local/lib/gcc/mipsel-none-elf/4.7.0/soft-float/ -lm -lc -lgcc -lnullmon && \
 #echo as-dbg && mipsel-none-elf-as -G1 -o obj/head-dbg.o --defsym _LOADABLE_SIZE=0x800 head.S && \
 #echo ld-dbg && true mipsel-none-elf-gcc -msoft-float -o obj/${EXE_NAME}.dbg obj/head-dbg.o obj/main.o -L/usr/local/mipsel-none-elf/lib/soft-float/ -L/usr/local/lib/gcc/mipsel-none-elf/4.7.0/soft-float/ -lm -lc -lgcc -lnosys && \
 
 #echo strip && mipsel-none-elf-strip -R .reginfo -R .pdr -R .text.startup -R .eh_frame -R .comment -R .gnu.attributes -R .rel.dyn obj/${EXE_NAME}.elf && \
 
-echo cc && mipsel-none-elf-gcc -g -c -fomit-frame-pointer -fno-stack-protector -G0 -O2 -msoft-float -nostdlib -mips1 -march=3000 -o obj/main.o main.c -I. -Wall -Wextra -Wno-unused-variable -Wno-unused-function -Wno-pointer-sign && \
+echo cc && mipsel-none-elf-gcc -g -c -fomit-frame-pointer -fno-stack-protector -G0 -O2 -flto -msoft-float -nostdlib -mips1 -march=3000 -o obj/main.o main.c -I. -Wall -Wextra -Wno-unused-variable -Wno-unused-function -Wno-pointer-sign && \
 echo as && mipsel-none-elf-as -g -G1 -o obj/head.o head.S && \
-echo ld && mipsel-none-elf-ld -g -T link.ld -o obj/${EXE_NAME}.elf obj/head.o obj/main.o -L/usr/local/mipsel-none-elf/lib/soft-float/ -L/usr/local/lib/gcc/mipsel-none-elf/4.7.0/soft-float/ -lm -lc -lgcc -lnullmon && \
+echo ld && mipsel-none-elf-gcc -g -Wl,-T,link.ld -msoft-float -o obj/${EXE_NAME}.elf obj/head.o obj/main.o -L/usr/local/mipsel-none-elf/lib/soft-float/ -L/usr/local/lib/gcc/mipsel-none-elf/4.7.0/soft-float/ -lm -lc -lgcc -lnullmon && \
 echo objcopy && mipsel-none-elf-objcopy -O binary obj/${EXE_NAME}.elf obj/${EXE_NAME}.tmp && \
 cp obj/${EXE_NAME}.tmp ${EXE_NAME}.exe && \
 cc -o tools/iso2raw tools/iso2raw.c && \

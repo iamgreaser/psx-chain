@@ -104,7 +104,7 @@ static void gpu_init(void)
 	gpu_send_control_gp1(0x00000000);
 
 	// Fix up DMA 
-	gpu_send_control_gp1(0x04000001);
+	gpu_send_control_gp1(0x04000002);
 	gpu_send_control_gp1(0x01000000);
 
 	// Set display area 

@@ -53,6 +53,9 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 		"=r"(*(uint32_t *)xy2)
 		::);
 
+	// TODO: z-order
+	int32_t otz = -1;
+
 	// Split into subtypes
 	if(gl_begin_gourcount != 0)
 	{
@@ -62,7 +65,7 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 			((0x00<<24)|gl_begin_colbuf[i2]), (*(uint32_t *)xy2),
 		};
 
-		dma_send_prim(6, data);
+		dma_send_prim(6, data, otz);
 
 	} else {
 		uint32_t data[] = {
@@ -72,7 +75,7 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 			(*(uint32_t *)xy2),
 		};
 
-		dma_send_prim(4, data);
+		dma_send_prim(4, data, otz);
 	}
 
 	// TODO: colours and textures and whatnot
@@ -80,12 +83,13 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 
 GLvoid glFlush(GLvoid) // p138, 5.5
 {
-	// XXX: do we do something?
+	dma_flush();
 }
 
 GLvoid glFinish(GLvoid) // p138, 5.5
 {
 	glFlush();
+	dma_wait();
 }
 
 

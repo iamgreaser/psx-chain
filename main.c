@@ -192,7 +192,9 @@ static void update_frame(void)
 	}
 
 	tri_ang += FM_PI*2/180/2;
-	for(lag = 0; lag < 0x300; lag++) {}
+
+	// Flush DMA
+	glFinish();
 
 	// Draw string
 	gpu_send_control_gp1(0x01000000);
@@ -325,6 +327,7 @@ int main(void)
 
 	// Reset GPU 
 	gpu_init();
+	dma_init();
 
 	// Set up joypad
 	joy_init();

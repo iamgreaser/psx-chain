@@ -15,6 +15,10 @@ SECTIONS
 		*(.text*)
 		*(.stub)
 	}
+	_INIT_SECTION = .;
+	.init : { *(.init) }
+	_FINI_SECTION = .;
+	.fini : { *(.fini) }
 	
 	. = ALIGN(8);
 	.rodata : {
@@ -28,6 +32,9 @@ SECTIONS
 	.reginfo : { *(.reginfo) }
 	.pdr : { *(.pdr) }
 	.gnu.attributes : { *(.gnu.attributes) }
+	.ctors : { *(.ctors) }
+	.dtors : { *(.dtors) }
+	.jcr : { *(.jcr) }
 
 	.data : {
 		*(.data*)

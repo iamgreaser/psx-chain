@@ -26,6 +26,11 @@ aaa_very_start:
 	lui $gp, %hi(_gp)
 	ori $gp, $gp, %lo(_gp)
 
+	/* Call .init */
+	lui $t0, %hi(_INIT_SECTION)
+	ori $t0, $t0, %lo(_INIT_SECTION)
+	jalr $t0
+
 	/* Jump to start */
 	jal aaa_start
 	nop

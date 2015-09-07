@@ -56,13 +56,17 @@ void isr_handler_c(uint32_t cop0_sr, uint32_t cop0_cause, uint32_t cop0_epc)
 
 void aaa_start(void)
 {
+	volatile int fencer = 0;
+	(void)fencer;
 	int i;
 
 	I_MASK = 0;
 
-	memset((void *)(_BSS_START), 0, _BSS_END - _BSS_START);
+	//memset((void *)(_BSS_START), 0, _BSS_END - _BSS_START);
 	memcpy((void *)0x80000080, int_handler_stub,
 		int_handler_stub_end - int_handler_stub);
+
+	fencer = 1;
 
 	I_STAT = 0xFFFF;
 	I_MASK = 0x0001;

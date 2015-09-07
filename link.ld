@@ -4,6 +4,7 @@ SECTIONS
 {
 	. = 0x80010800;
 	_LOADABLE_START_WHEAD = .;
+	_ftext = .;
 	.main : {
 		*(.boot)
 		. = ALIGN(8);

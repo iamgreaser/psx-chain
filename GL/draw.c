@@ -56,19 +56,36 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 	// Split into subtypes
 	if(gl_begin_gourcount != 0)
 	{
-		gpu_send_control_gp0((0x30<<24)|gl_begin_colbuf[i0]);
-		gpu_send_data(*(uint32_t *)xy0);
-		gpu_send_data((0x00<<24)|gl_begin_colbuf[i1]);
-		gpu_send_data(*(uint32_t *)xy1);
-		gpu_send_data((0x00<<24)|gl_begin_colbuf[i2]);
-		gpu_send_data(*(uint32_t *)xy2);
+		uint32_t data[] = {
+			((0x30<<24)|gl_begin_colbuf[i0]), (*(uint32_t *)xy0),
+			((0x00<<24)|gl_begin_colbuf[i1]), (*(uint32_t *)xy1),
+			((0x00<<24)|gl_begin_colbuf[i2]), (*(uint32_t *)xy2),
+		};
+
+		dma_send_prim(6, data);
+
 	} else {
-		gpu_send_control_gp0((0x20<<24)|gl_begin_colbuf[i0]);
-		gpu_send_data(*(uint32_t *)xy0);
-		gpu_send_data(*(uint32_t *)xy1);
-		gpu_send_data(*(uint32_t *)xy2);
+		uint32_t data[] = {
+			((0x20<<24)|gl_begin_colbuf[i0]),
+			(*(uint32_t *)xy0),
+			(*(uint32_t *)xy1),
+			(*(uint32_t *)xy2),
+		};
+
+		dma_send_prim(4, data);
 	}
 
 	// TODO: colours and textures and whatnot
 }
+
+GLvoid glFlush(GLvoid) // p138, 5.5
+{
+	// XXX: do we do something?
+}
+
+GLvoid glFinish(GLvoid) // p138, 5.5
+{
+	glFlush();
+}
+
 

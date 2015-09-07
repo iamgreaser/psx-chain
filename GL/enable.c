@@ -6,6 +6,10 @@ static GLvoid gl_internal_set_enabled(GLenum cap, GLboolean val)
 			gl_enable_cull_face = val;
 			break;
 
+		case GL_DEPTH_TEST:
+			gl_enable_depth_test = val;
+			break;
+
 		default:
 			gl_internal_set_error(GL_INVALID_ENUM);
 			break;

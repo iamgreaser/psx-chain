@@ -69,7 +69,7 @@ GLvoid glVertex3x(GLfixed x, GLfixed y, GLfixed z)
 	gl_begin_vtxbuf[gl_begin_idx][1] = sz;
 	gl_begin_colbuf[gl_begin_idx] = gl_begin_colcur;
 	gl_begin_texbuf[gl_begin_idx] = gl_begin_texcur;
-	
+
 	// Advance
 	gl_begin_idx++;
 
@@ -87,6 +87,7 @@ GLvoid glVertex3x(GLfixed x, GLfixed y, GLfixed z)
 				gl_internal_push_triangle(0, 1, 2);
 				gl_begin_gourcount = 0;
 			}
+
 			break;
 
 		default:
@@ -96,5 +97,4 @@ GLvoid glVertex3x(GLfixed x, GLfixed y, GLfixed z)
 			break;
 	}
 }
-
 

@@ -39,6 +39,7 @@ typedef fixed GLclampx;
 // enum: 'e' enableables (added as we find them)
 #define GL_NORMALIZE 0x6501 /* p38, 2.9.3 Normal Transformation */
 #define GL_CULL_FACE 0x6502 /* p72, 3.5.1 Basic Polygon Rasterization */
+#define GL_DEPTH_TEST 0x6503 /* p106, 4.15 Depth Buffer Test */
 
 // enum: 'M' matrices (p34, 2.9 Coordinate Transformations)
 // we are probably going to ignore GL_PROJECTION.
@@ -71,6 +72,8 @@ GLvoid glClearColorx(GLfixed r, GLfixed g, GLfixed b, GLfixed a);
 GLvoid glClear(GLbitfield mask);
 
 // draw
+GLvoid glFlush(GLvoid); // p138, 5.5
+GLvoid glFinish(GLvoid); // p138, 5.5
 
 // enable
 GLvoid glEnable(GLenum cap); // p38 2.9.3

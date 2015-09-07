@@ -18,8 +18,10 @@ extern uint8_t fsys_rawcga[];
 #include "vec.c"
 #include "gpu.c"
 #include "gte.c"
-#include "joy.c"
+#include "dma.c"
 #include "GL/gl.c"
+
+#include "joy.c"
 
 void update_music_status(int ins, int ins_num);
 
@@ -136,7 +138,8 @@ static void update_frame(void)
 	int i;
 
 	// Enable things
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
 
 	// Clear screen
 	glClearColorx(0x0000, 0x1D00, 0x1D00, 0x0000);
@@ -155,30 +158,38 @@ static void update_frame(void)
 	gte_init_offset(0, 0, 120);
 
 	// Draw spinny triangle
-	gpu_send_control_gp1(0x01000000);
-	glBegin(GL_TRIANGLES);
-		glColor3ub(0x7F, 0x00, 0x00);
-		glVertex3x(-50, -50,  0);
-		glColor3ub(0x7F, 0x7F, 0x00);
-		glVertex3x( 50, -50,  0);
-		glColor3ub(0x7F, 0x00, 0x7F);
-		glVertex3x(  0,  50,  0);
+	//gpu_send_control_gp1(0x01000000);
+	for(i = 0; i < 3; i++)
+	{
+		glBegin(GL_TRIANGLES);
+			glColor3ub(0x7F, 0x00, 0x00);
+			glVertex3x(-50, -50,  0);
+			glColor3ub(0x7F, 0x7F, 0x00);
+			glVertex3x( 50, -50,  0);
+			glColor3ub(0x7F, 0x00, 0x7F);
+			glVertex3x(  0,  50,  0);
 
-		glColor3ub(0x00, 0x7F, 0x00);
-		glVertex3x(  0,   0, 70);
-		glVertex3x( 50, -50,  0);
-		glVertex3x(-50, -50,  0);
+			glColor3ub(0x00, 0x7F, 0x00);
+			glVertex3x(  0,   0, 70);
+			glColor3ub(0x7F, 0x7F, 0x00);
+			glVertex3x( 50, -50,  0);
+			glColor3ub(0x00, 0x7F, 0x7F);
+			glVertex3x(-50, -50,  0);
 
-		glColor3ub(0x00, 0x00, 0x7F);
-		glVertex3x(  0,   0, 70);
-		glVertex3x(-50, -50,  0);
-		glVertex3x(  0,  50,  0);
+			glColor3ub(0x00, 0x00, 0x7F);
+			glVertex3x(  0,   0, 70);
+			glVertex3x(-50, -50,  0);
+			glColor3ub(0x00, 0x7F, 0x7F);
+			glVertex3x(  0,  50,  0);
 
-		glColor3ub(0x7F, 0x7F, 0x7F);
-		glVertex3x(  0,   0, 70);
-		glVertex3x(  0,  50,  0);
-		glVertex3x( 50, -50,  0);
-	glEnd();
+			glColor3ub(0x7F, 0x7F, 0x7F);
+			glVertex3x(  0,   0, 70);
+			glVertex3x(  0,  50,  0);
+			glColor3ub(0x00, 0x00, 0x00);
+			glVertex3x( 50, -50,  0);
+		glEnd();
+		glTranslatex(-0x40, 0, 0);
+	}
 
 	tri_ang += FM_PI*2/180/2;
 	for(lag = 0; lag < 0x300; lag++) {}

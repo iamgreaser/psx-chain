@@ -67,6 +67,9 @@ void isr_handler_c(uint32_t cop0_sr, uint32_t cop0_cause, uint32_t cop0_epc)
 
 	if((I_STAT & 0x0001) != 0)
 	{
+		TMR_n_MODE(1) = 0;
+		TMR_n_COUNT(1) = 0;
+		TMR_n_MODE(1) = 0x0300;
 		got_vblank++;
 		if(playing_music) f3m_player_play(&s3mplayer, NULL, NULL);
 		I_STAT &= ~0x0001;
@@ -137,6 +140,8 @@ static void update_frame(void)
 	volatile int lag;
 	int i;
 
+	int tmr_frame = TMR_n_COUNT(1);
+
 	// Enable things
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -155,7 +160,7 @@ static void update_frame(void)
 
 	// Draw spinny triangle
 	//gpu_send_control_gp1(0x01000000);
-	int q = 40;
+	int q = 60;
 	for(i = 0; i < q; i++)
 	{
 		glPushMatrix();
@@ -257,8 +262,17 @@ static void update_frame(void)
 	screen_print(16, 16+8*3, 0x007F7F7F, update_str_buf);
 	sprintf(update_str_buf, "glGetError() = %X", (unsigned)glGetError());
 	screen_print(16, 16+8*5, 0x007F7F7F, update_str_buf);
+	sprintf(update_str_buf, "dma beg = %i", (int)TMR_n_COUNT(1));
+	screen_print(16, 16+8*8, 0x007F7F7F, update_str_buf);
 
 	// Flush DMA
+	glFinish();
+
+	// Get actual render time
+	sprintf(update_str_buf, "dma end = %i", (int)TMR_n_COUNT(1));
+	screen_print(16, 16+8*9, 0x007F7F7F, update_str_buf);
+	sprintf(update_str_buf, "fra beg = %i", (int)tmr_frame);
+	screen_print(16, 16+8*7, 0x007F7F7F, update_str_buf);
 	glFinish();
 
 	//while((GP1 & 0x10000000) == 0) {}

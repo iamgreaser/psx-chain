@@ -46,13 +46,61 @@ GLvoid glRotatex(GLfixed theta, GLfixed x, GLfixed y, GLfixed z) // p35 2.9.2
 {
 	int i, j, k;
 
-	// TODO: one-axis optimised variants
-
 	// Ensure we have an axis of rotation!
 	if(x == 0 && y == 0 && z == 0)
 		return;
 
+	// Mark dirty
 	gl_mat_gte_isdirty = GL_TRUE;
+
+	// OPTIMISATION: If on a single axis we don't need to tweak as much
+	int zeros = 0;
+	if(x == 0) zeros++;
+	if(y == 0) zeros++;
+	if(z == 0) zeros++;
+
+	//if(0)
+	if(zeros == 2)
+	{
+		// Rotate around an axis
+		// FIXME: get correct rotation orders
+		int a, b;
+		if(x != 0) { a = 1; b = 2; }
+		else if(y != 0) { a = 2; b = 0; }
+		else { a = 0; b = 1; }
+
+		// Get matrix pointer
+		GLint stackidx = gl_mat_stack[gl_mat_cur];
+		GLfixed *rot = gl_mat_rot[gl_mat_cur][stackidx];
+
+		// Get sin/cos
+		theta /= 360;
+		GLfixed tsin = fixsin(theta);
+		GLfixed tcos = fixcos(theta);
+
+		// Get old values
+		GLfixed ta0 = rot[a*3 + 0];
+		GLfixed ta1 = rot[a*3 + 1];
+		GLfixed ta2 = rot[a*3 + 2];
+		GLfixed tb0 = rot[b*3 + 0];
+		GLfixed tb1 = rot[b*3 + 1];
+		GLfixed tb2 = rot[b*3 + 2];
+
+		// Write new values
+		// TODO: get this to behave
+		rot[a*3 + 0] = fixmulf(ta0, tcos) - fixmulf(tb0, tsin);
+		rot[a*3 + 1] = fixmulf(ta1, tcos) - fixmulf(tb1, tsin);
+		rot[a*3 + 2] = fixmulf(ta2, tcos) - fixmulf(tb2, tsin);
+		rot[b*3 + 0] = fixmulf(ta0, tsin) + fixmulf(tb0, tcos);
+		rot[b*3 + 1] = fixmulf(ta1, tsin) + fixmulf(tb1, tcos);
+		rot[b*3 + 2] = fixmulf(ta2, tsin) + fixmulf(tb2, tcos);
+
+		return;
+	}
+
+	//
+	// GENERIC OPENGL ROTATION
+	//
 
 	// Normalise x,y,z
 	GLfixed vlen2 = fixmul(x,x) + fixmul(y,y) + fixmul(z,z);
@@ -68,9 +116,11 @@ GLvoid glRotatex(GLfixed theta, GLfixed x, GLfixed y, GLfixed z) // p35 2.9.2
 
 		// FIXME get this working correctly
 		vlen2 = x*x + y*y + z*z;
+
 		// Skip if we get 0
 		if(vlen2 == 0)
 			return;
+
 		GLfixed vlen = fixsqrt(vlen2)<<8;
 		x = fixdiv(x, vlen);
 		y = fixdiv(y, vlen);
@@ -106,11 +156,11 @@ GLvoid glRotatex(GLfixed theta, GLfixed x, GLfixed y, GLfixed z) // p35 2.9.2
 	// Apply rotation matrix
 	GLint stackidx = gl_mat_stack[gl_mat_cur];
 	GLfixed *rot = gl_mat_rot[gl_mat_cur][stackidx];
-	GLfixed *trn = gl_mat_trn[gl_mat_cur][stackidx];
+	//GLfixed *trn = gl_mat_trn[gl_mat_cur][stackidx];
 	GLfixed oldrot[9];
-	GLfixed oldtrn[3];
+	//GLfixed oldtrn[3];
 	memcpy(oldrot, rot, sizeof(GLfixed)*9);
-	memcpy(oldtrn, trn, sizeof(GLfixed)*3);
+	//memcpy(oldtrn, trn, sizeof(GLfixed)*3);
 
 	// FIXME: translate properly
 	// FIXME: ensure correct order
@@ -125,6 +175,7 @@ GLvoid glRotatex(GLfixed theta, GLfixed x, GLfixed y, GLfixed z) // p35 2.9.2
 		rot[3*i + j] = sum;
 	}
 
+	/*
 	for(i = 0; i < 3; i++)
 	{
 		GLfixed sum = 0;
@@ -136,6 +187,7 @@ GLvoid glRotatex(GLfixed theta, GLfixed x, GLfixed y, GLfixed z) // p35 2.9.2
 
 		//trn[i] = sum;
 	}
+	*/
 }
 
 GLvoid glTranslatex(GLfixed x, GLfixed y, GLfixed z) // p36 2.9.2

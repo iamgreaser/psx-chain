@@ -63,5 +63,18 @@ int gte_get_side(void);
 void gte_cmd_rtps(void);
 void gte_cmd_rtpt(void);
 
+// joy
+extern volatile uint16_t pad_data_now;
+extern volatile uint16_t pad_id_now;
+extern volatile int pad_stage;
+extern uint16_t pad_data;
+extern uint16_t pad_id;
+extern uint16_t pad_old_data;
+void joy_update(void);
+void joy_poll(void);
+void joy_init(void);
+
+// vec
+
 extern volatile int screen_buffer;
 

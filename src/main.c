@@ -1,9 +1,5 @@
 #include "common.h"
 
-#include "vec.c"
-
-#include "joy.c"
-
 void update_music_status(int ins, int ins_num);
 
 #define TARGET_PSX

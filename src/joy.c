@@ -1,3 +1,5 @@
+#include "common.h"
+
 volatile uint16_t pad_data_now = 0xFFFF;
 volatile uint16_t pad_id_now = 0xFFFF;
 volatile int pad_stage = 0;
@@ -5,7 +7,7 @@ uint16_t pad_data = 0x0000;
 uint16_t pad_id = 0xFFFF;
 uint16_t pad_old_data = 0x0000;
 
-void joy_update()
+void joy_update(void)
 {
 	volatile int k;
 	volatile int lag;
@@ -82,6 +84,4 @@ void joy_init(void)
 	// Begin joypad read
 	joy_poll();
 }
-
-
 

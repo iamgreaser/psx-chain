@@ -15,7 +15,7 @@ CFLAGS = -g -c \
 	-Isrc -Wall -Wextra \
 	-Wno-unused-variable -Wno-unused-function -Wno-pointer-sign \
 
-LDFLAGS = -g -Wl,-T,link.ld \
+LDFLAGS = -g -Wl,-T,link.ld -flto \
 	-msoft-float \
 	-L/usr/local/mipsel-none-elf/lib/soft-float/ \
 	-L/usr/local/lib/gcc/mipsel-none-elf/4.7.0/soft-float/ \
@@ -34,6 +34,7 @@ OBJS = $(OBJDIR)/head.o \
 	$(OBJDIR)/fix.o \
 	$(OBJDIR)/gpu.o \
 	$(OBJDIR)/gte.o \
+	$(OBJDIR)/joy.o \
 	\
 	$(OBJDIR)/GL/gl.o \
 	\

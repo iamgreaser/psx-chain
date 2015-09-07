@@ -1,27 +1,29 @@
-static void vec3_set(vec3 *v, fixed x, fixed y, fixed z)
+#include "common.h"
+
+void vec3_set(vec3 *v, fixed x, fixed y, fixed z)
 {
 	(*v)[0] = x;
 	(*v)[1] = y;
 	(*v)[2] = z;
 }
 
-static void vec3_copy(vec3 *v, vec3 *a)
+void vec3_copy(vec3 *v, vec3 *a)
 {
 	memcpy((*v), (*a), sizeof(vec3));
 }
 
-static void vec4_copy_from_vec3(vec4 *v, vec3 *a)
+void vec4_copy_from_vec3(vec4 *v, vec3 *a)
 {
 	memcpy((*v), (*a), sizeof(vec3));
 	(*v)[3] = 0x10000;
 }
 
-static void vec4_copy(vec4 *v, vec4 *a)
+void vec4_copy(vec4 *v, vec4 *a)
 {
 	memcpy((*v), (*a), sizeof(vec4));
 }
 
-static fixed vec4_dot_3(vec4 *a, vec4 *b)
+fixed vec4_dot_3(vec4 *a, vec4 *b)
 {
 	int i;
 	fixed sum = 0;
@@ -32,7 +34,7 @@ static fixed vec4_dot_3(vec4 *a, vec4 *b)
 	return sum;
 }
 
-static fixed vec4_selfdot_3(vec4 *v)
+fixed vec4_selfdot_3(vec4 *v)
 {
 	int i;
 	fixed sum = 0;
@@ -43,7 +45,7 @@ static fixed vec4_selfdot_3(vec4 *v)
 	return sum;
 }
 
-static void vec4_cross(vec4 *v, vec4 *a, vec4 *b)
+void vec4_cross(vec4 *v, vec4 *a, vec4 *b)
 {
 	(*v)[0] = fixmulf((*a)[1], (*b)[2]) - fixmulf((*a)[2], (*b)[1]);
 	(*v)[1] = fixmulf((*a)[2], (*b)[0]) - fixmulf((*a)[0], (*b)[2]);
@@ -51,7 +53,7 @@ static void vec4_cross(vec4 *v, vec4 *a, vec4 *b)
 	(*v)[3] = 0;
 }
 
-static void vec4_cross_origin(vec4 *v, vec4 *a, vec4 *o, vec4 *b)
+void vec4_cross_origin(vec4 *v, vec4 *a, vec4 *o, vec4 *b)
 {
 	int i;
 
@@ -65,7 +67,7 @@ static void vec4_cross_origin(vec4 *v, vec4 *a, vec4 *o, vec4 *b)
 	vec4_cross(v, &ao, &bo);
 }
 
-static void vec4_normalize_3(vec4 *v)
+void vec4_normalize_3(vec4 *v)
 {
 	int i;
 
@@ -76,7 +78,7 @@ static void vec4_normalize_3(vec4 *v)
 		(*v)[i] = fixmulf((*v)[i], rcp);
 }
 
-static void mat4_load_identity(mat4 *M)
+void mat4_load_identity(mat4 *M)
 {
 	int i, j;
 
@@ -85,12 +87,12 @@ static void mat4_load_identity(mat4 *M)
 		(*M)[i][j] = (i==j ? (1<<16) : (0<<16));
 }
 
-static void mat4_copy(mat4 *M, mat4 *A)
+void mat4_copy(mat4 *M, mat4 *A)
 {
 	memcpy((*M), (*A), sizeof(mat4));
 }
 
-static void mat4_mul_mat4_mat4(mat4 *M, mat4 *A, mat4 *B)
+void mat4_mul_mat4_mat4(mat4 *M, mat4 *A, mat4 *B)
 {
 	int i,j,k;
 
@@ -110,56 +112,56 @@ static void mat4_mul_mat4_mat4(mat4 *M, mat4 *A, mat4 *B)
 	(*M)[3][3] = 0x10000;
 }
 
-static void mat4_mul_mat4_post(mat4 *M, mat4 *A)
+void mat4_mul_mat4_post(mat4 *M, mat4 *A)
 {
 	mat4 T;
 	mat4_mul_mat4_mat4(&T, M, A);
 	mat4_copy(M, &T);
 }
 
-static void mat4_mul_mat4_pre(mat4 *M, mat4 *A)
+void mat4_mul_mat4_pre(mat4 *M, mat4 *A)
 {
 	mat4 T;
 	mat4_mul_mat4_mat4(&T, A, M);
 	mat4_copy(M, &T);
 }
 
-static void mat4_translate_imm3(mat4 *M, fixed x, fixed y, fixed z)
+void mat4_translate_imm3(mat4 *M, fixed x, fixed y, fixed z)
 {
 	(*M)[3][0] += x;
 	(*M)[3][1] += y;
 	(*M)[3][2] += z;
 }
 
-static void mat4_translate_vec3(mat4 *M, vec3 *v)
+void mat4_translate_vec3(mat4 *M, vec3 *v)
 {
 	(*M)[3][0] += (*v)[0];
 	(*M)[3][1] += (*v)[1];
 	(*M)[3][2] += (*v)[2];
 }
 
-static void mat4_translate_vec4(mat4 *M, vec4 *v)
+void mat4_translate_vec4(mat4 *M, vec4 *v)
 {
 	(*M)[3][0] += (*v)[0];
 	(*M)[3][1] += (*v)[1];
 	(*M)[3][2] += (*v)[2];
 }
 
-static void mat4_translate_vec3_neg(mat4 *M, vec3 *v)
+void mat4_translate_vec3_neg(mat4 *M, vec3 *v)
 {
 	(*M)[3][0] -= (*v)[0];
 	(*M)[3][1] -= (*v)[1];
 	(*M)[3][2] -= (*v)[2];
 }
 
-static void mat4_translate_vec4_neg(mat4 *M, vec4 *v)
+void mat4_translate_vec4_neg(mat4 *M, vec4 *v)
 {
 	(*M)[3][0] -= (*v)[0];
 	(*M)[3][1] -= (*v)[1];
 	(*M)[3][2] -= (*v)[2];
 }
 
-static void mat4_rotate_y(mat4 *M, fixed ang)
+void mat4_rotate_y(mat4 *M, fixed ang)
 {
 	int i;
 
@@ -178,7 +180,7 @@ static void mat4_rotate_y(mat4 *M, fixed ang)
 	}
 }
 
-static void mat4_rotate_x(mat4 *M, fixed ang)
+void mat4_rotate_x(mat4 *M, fixed ang)
 {
 	int i;
 
@@ -197,7 +199,7 @@ static void mat4_rotate_x(mat4 *M, fixed ang)
 	}
 }
 
-static void mat4_rotate_z(mat4 *M, fixed ang)
+void mat4_rotate_z(mat4 *M, fixed ang)
 {
 	int i;
 
@@ -216,7 +218,7 @@ static void mat4_rotate_z(mat4 *M, fixed ang)
 	}
 }
 
-static void mat4_scale(mat4 *M, fixed s)
+void mat4_scale(mat4 *M, fixed s)
 {
 	int i, j;
 
@@ -225,7 +227,7 @@ static void mat4_scale(mat4 *M, fixed s)
 		(*M)[i][j] = fixmul((*M)[i][j], s);
 }
 
-static void mat4_apply_vec4(vec4 *v, mat4 *A)
+void mat4_apply_vec4(vec4 *v, mat4 *A)
 {
 	int i, j;
 	vec4 sv;

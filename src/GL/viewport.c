@@ -1,3 +1,6 @@
+#include "common.h"
+#include "GL/intern.h"
+
 GLvoid glViewport(GLint x, GLint y, GLsizei w, GLsizei h) // p34 2.9.1
 {
 	gl_vp_x = x;

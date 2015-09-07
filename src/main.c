@@ -1,25 +1,6 @@
-#include <string.h>
-#include <stdint.h>
-#include <math.h>
-
-#include "psx.h"
-
-typedef int32_t fixed;
-typedef int64_t fixed64;
-typedef fixed vec3[3];
-typedef fixed vec4[4];
-typedef vec4 mat4[4];
-
-extern uint8_t fsys_rawcga[];
-
-#include "fix.c"
-#include "GL/gl.h"
+#include "common.h"
 
 #include "vec.c"
-#include "gpu.c"
-#include "gte.c"
-#include "dma.c"
-#include "GL/gl.c"
 
 #include "joy.c"
 
@@ -344,7 +325,6 @@ int main(void)
 	// Reset GPU 
 	gpu_init();
 	dma_init();
-	gte_init(0, 0, 120, DMA_QUEUE_OT);
 
 	// Set up joypad
 	joy_init();

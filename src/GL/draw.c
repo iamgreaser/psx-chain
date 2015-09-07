@@ -1,3 +1,6 @@
+#include "common.h"
+#include "GL/intern.h"
+
 GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 {
 	// Flush matrix

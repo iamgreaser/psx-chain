@@ -1,0 +1,18 @@
+# final
+boot.exe
+chaintest
+chaintest.cue
+chaintest.bin
+
+# objects
+*.o
+*.elf
+
+# tools
+tools/iso2raw
+
+# vim
+.*.swp
+.*.swo
+.*.swq
+

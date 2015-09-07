@@ -1,10 +1,11 @@
 CROSSPREFIX=mipsel-none-elf-
 
-CC=$(CROSSPREFIX)gcc
-AS=$(CROSSPREFIX)as
-OBJCOPY=$(CROSSPREFIX)objcopy
+CROSS_CC=$(CROSSPREFIX)gcc
+CROSS_AS=$(CROSSPREFIX)as
+CROSS_OBJCOPY=$(CROSSPREFIX)objcopy
 
 RM_F=rm -f
+MKISOFS=mkisofs
 
 ASFLAGS = -g -G0
 
@@ -25,26 +26,51 @@ ISO_NAME=chaintest
 
 OBJDIR = obj
 SRCDIR = src
-INCLUDES = src/psx.h src/GL/gl.h
+INCLUDES = src/psx.h src/common.h src/GL/gl.h src/GL/intern.h
 
 OBJS = $(OBJDIR)/head.o \
 	\
+	$(OBJDIR)/dma.o \
+	$(OBJDIR)/fix.o \
+	$(OBJDIR)/gpu.o \
+	$(OBJDIR)/gte.o \
+	\
+	$(OBJDIR)/GL/gl.o \
+	\
+	$(OBJDIR)/GL/begin.o \
+	$(OBJDIR)/GL/clear.o \
+	$(OBJDIR)/GL/draw.o \
+	$(OBJDIR)/GL/enable.o \
+	$(OBJDIR)/GL/error.o \
+	$(OBJDIR)/GL/matrix.o \
+	$(OBJDIR)/GL/viewport.o \
+	\
 	$(OBJDIR)/main.o
 
-all: $(EXE_NAME).exe
+
+all: $(EXE_NAME).exe $(ISO_NAME).cue
 
 clean:
 	$(RM_F) $(OBJS)
 
+$(ISO_NAME).cue: $(ISO_NAME) tools/iso2raw
+	./tools/iso2raw tools/rawhead2.bin $(ISO_NAME)
+
+tools/iso2raw: tools/iso2raw.c
+	$(CC) -o tools/iso2raw tools/iso2raw.c
+
+$(ISO_NAME): $(EXE_NAME).exe
+	$(MKISOFS) -o $(ISO_NAME) system.cnf $(EXE_NAME).exe
+
 $(EXE_NAME).exe: $(OBJS)
-	$(OBJCOPY) -O binary obj/$(EXE_NAME).elf $(EXE_NAME).exe
+	$(CROSS_OBJCOPY) -O binary obj/$(EXE_NAME).elf $(EXE_NAME).exe
 
 obj/$(EXE_NAME).elf: $(OBJS)
-	$(CC) -o obj/$(EXE_NAME).elf $(OBJS) $(LDFLAGS)
+	$(CROSS_CC) -o obj/$(EXE_NAME).elf $(OBJS) $(LDFLAGS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c $(INCLUDES)
-	$(CC) -c -o $@ $(CFLAGS) $<
+	$(CROSS_CC) -c -o $@ $(CFLAGS) $<
 
 $(OBJDIR)/head.o: $(SRCDIR)/head.S $(INCLUDES)
-	$(AS) -o $@ $(ASFLAGS) $<
+	$(CROSS_AS) -o $@ $(ASFLAGS) $<
 

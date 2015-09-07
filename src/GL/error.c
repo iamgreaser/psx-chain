@@ -1,3 +1,6 @@
+#include "common.h"
+#include "GL/intern.h"
+
 GLvoid gl_internal_set_error(GLenum error)
 {
 	if(error != GL_NO_ERROR) // safety

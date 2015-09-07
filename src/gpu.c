@@ -1,5 +1,9 @@
+#include "common.h"
+
 volatile int screen_buffer = 0;
 volatile int vblank_triggered = 0;
+
+extern uint8_t fsys_rawcga[];
 
 void gpu_send_control_gp0(int v)
 {
@@ -78,7 +82,7 @@ void gpu_push_vertex(int x, int y)
 	gpu_send_data((y<<16) | (x&0xFFFF));
 }
 
-static void gpu_init(void)
+void gpu_init(void)
 {
 	int i;
 	int x, y;

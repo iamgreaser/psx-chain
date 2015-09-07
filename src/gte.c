@@ -1,13 +1,15 @@
+#include "common.h"
+
 static const int gte_loss_invec = 0;
 
-static uint32_t gte_get_flag(void)
+uint32_t gte_get_flag(void)
 {
 	uint32_t ret;
 	asm volatile("\tcfc2 %0, $31\n" : "=r"(ret) : : );
 	return ret;
 }
 
-static void gte_init(int ofx, int ofy, int h, int otzmax)
+void gte_init(int ofx, int ofy, int h, int otzmax)
 {
 	asm volatile (
 		"\tctc2 %0, $24\n"
@@ -24,7 +26,7 @@ static void gte_init(int ofx, int ofy, int h, int otzmax)
 		: );
 }
 
-static void gte_loadmat_rot_full(mat4 *M)
+void gte_loadmat_rot_full(mat4 *M)
 {
 	asm volatile (
 		"\tctc2 %0, $0\n"
@@ -54,7 +56,7 @@ static void gte_loadmat_rot_full(mat4 *M)
 		: );
 }
 
-static void gte_loadmat_gl(GLfixed *MR, GLfixed *MT)
+void gte_loadmat_gl(GLfixed *MR, GLfixed *MT)
 {
 	asm volatile (
 		"\tctc2 %0, $0\n"
@@ -84,7 +86,7 @@ static void gte_loadmat_gl(GLfixed *MR, GLfixed *MT)
 		: );
 }
 
-static void gte_load_v0_vec3(const vec3 *v)
+void gte_load_v0_vec3(const vec3 *v)
 {
 	asm volatile (
 		"\tmtc2 %0, $0\n"
@@ -96,7 +98,7 @@ static void gte_load_v0_vec3(const vec3 *v)
 	);
 }
 
-static void gte_load_v012_vec3(const vec3 *v0, const vec3 *v1, const vec3 *v2)
+void gte_load_v012_vec3(const vec3 *v0, const vec3 *v1, const vec3 *v2)
 {
 	asm volatile (
 		"\tmtc2 %0, $0\n"
@@ -118,7 +120,7 @@ static void gte_load_v012_vec3(const vec3 *v0, const vec3 *v1, const vec3 *v2)
 	);
 }
 
-static void gte_load_v012_gl(const uint32_t *v0, const uint32_t *v1, const uint32_t *v2)
+void gte_load_v012_gl(const uint32_t *v0, const uint32_t *v1, const uint32_t *v2)
 {
 	asm volatile (
 		"\tmtc2 %0, $0\n"
@@ -137,7 +139,7 @@ static void gte_load_v012_gl(const uint32_t *v0, const uint32_t *v1, const uint3
 	);
 }
 
-static void gte_save_ir123_ptr3(fixed *ir1, fixed *ir2, fixed *ir3)
+void gte_save_ir123_ptr3(fixed *ir1, fixed *ir2, fixed *ir3)
 {
 	asm volatile(
 		"\tmfc2 %0, $9\n"
@@ -149,7 +151,8 @@ static void gte_save_ir123_ptr3(fixed *ir1, fixed *ir2, fixed *ir3)
 		"=r"(*ir3)
 		::);
 }
-static void gte_save_s0_vec3(vec3 *v)
+
+void gte_save_s0_vec3(vec3 *v)
 {
 	int32_t res0_xy;
 	int32_t res0_z;
@@ -166,7 +169,7 @@ static void gte_save_s0_vec3(vec3 *v)
 	(*v)[2] = (fixed)res0_z;
 }
 
-static void gte_save_s012_vec3(vec3 *v0, vec3 *v1, vec3 *v2)
+void gte_save_s012_vec3(vec3 *v0, vec3 *v1, vec3 *v2)
 {
 	int32_t res0_xy;
 	int32_t res0_z;
@@ -201,7 +204,7 @@ static void gte_save_s012_vec3(vec3 *v0, vec3 *v1, vec3 *v2)
 	(*v2)[2] = (fixed)res2_z;
 }
 
-static void gte_save_s012xy_ui32_t(uint32_t *xy0, uint32_t *xy1, uint32_t *xy2)
+void gte_save_s012xy_ui32_t(uint32_t *xy0, uint32_t *xy1, uint32_t *xy2)
 {
 	asm volatile(
 		"\tmfc2 %0, $12\n"
@@ -214,7 +217,7 @@ static void gte_save_s012xy_ui32_t(uint32_t *xy0, uint32_t *xy1, uint32_t *xy2)
 		::);
 }
 
-static int gte_get_side(void)
+int gte_get_side(void)
 {
 	int32_t mac0;
 
@@ -228,12 +231,12 @@ static int gte_get_side(void)
 	return mac0;
 }
 
-static void gte_cmd_rtps(void)
+void gte_cmd_rtps(void)
 {
 	asm volatile ("\tcop2 0x0180001\n");
 }
 
-static void gte_cmd_rtpt(void)
+void gte_cmd_rtpt(void)
 {
 	asm volatile ("\tcop2 0x0280030\n");
 }

@@ -1,3 +1,4 @@
+#include "common.h"
 
 #define DMA_QUEUE_OT_POW (10)
 #define DMA_QUEUE_OT (1<<DMA_QUEUE_OT_POW)
@@ -41,6 +42,9 @@ void dma_init(void)
 
 	// Set up block + order table
 	dma_init_block();
+
+	// Set up GTE
+	gte_init(0, 0, 120, DMA_QUEUE_OT);
 }
 
 void dma_wait(void)
@@ -102,7 +106,7 @@ void dma_send_prim(uint32_t count, uint32_t *data, int32_t otz)
 
 }
 
-static void screen_print(int x, int y, uint32_t c, const char *str)
+void screen_print(int x, int y, uint32_t c, const char *str)
 {
 	int i;
 
@@ -125,5 +129,4 @@ static void screen_print(int x, int y, uint32_t c, const char *str)
 		dma_send_prim(5, data, -1);
 	}
 }
-
 

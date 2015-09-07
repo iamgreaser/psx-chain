@@ -1,3 +1,6 @@
+#include "common.h"
+#include "GL/intern.h"
+
 GLvoid gl_internal_flush_matrix(GLvoid)
 {
 	// Check if GTE matrix is clean

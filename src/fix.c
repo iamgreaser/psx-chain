@@ -1,6 +1,6 @@
-#define FM_PI ((fixed)0x00008000)
+#include "common.h"
 
-const int16_t sintab[256] = {
+static const int16_t sintab[256] = {
 	0, 402, 803, 1205, 1605, 2005, 2404, 2801,
 	3196, 3589, 3980, 4369, 4756, 5139, 5519, 5896,
 	6269, 6639, 7005, 7366, 7723, 8075, 8423, 8765,
@@ -35,17 +35,17 @@ const int16_t sintab[256] = {
 	-3196, -2801, -2404, -2005, -1605, -1205, -803, -402,
 };
 
-static int fixtoi(fixed v)
+int fixtoi(fixed v)
 {
 	return v>>16;
 }
 
-static fixed itofix(int v)
+fixed itofix(int v)
 {
 	return v<<16;
 }
 
-static fixed fixmul(fixed a, fixed b)
+fixed fixmul(fixed a, fixed b)
 {
 	int64_t ae = a;
 	int64_t be = b;
@@ -58,12 +58,12 @@ static fixed fixmul(fixed a, fixed b)
 	return (fixed)re;
 }
 
-static fixed fixmulf(fixed a, fixed b)
+fixed fixmulf(fixed a, fixed b)
 {
 	return (a>>8)*(b>>8);
 }
 
-static fixed fixdiv(fixed a, fixed b)
+fixed fixdiv(fixed a, fixed b)
 {
 	int64_t ae = a;
 	int64_t be = b;
@@ -75,7 +75,7 @@ static fixed fixdiv(fixed a, fixed b)
 	return (fixed)re;
 }
 
-static fixed fixsqrt(fixed v)
+fixed fixsqrt(fixed v)
 {
 	int i;
 
@@ -96,7 +96,7 @@ static fixed fixsqrt(fixed v)
 	return ret;
 }
 
-static int32_t intsqrt(int32_t v)
+int32_t intsqrt(int32_t v)
 {
 	int i;
 
@@ -117,7 +117,7 @@ static int32_t intsqrt(int32_t v)
 	return ret;
 }
 
-static fixed fixisqrt(fixed v)
+fixed fixisqrt(fixed v)
 {
 	// TODO: Proper inverse square root
 	float sq = fixsqrt(v);
@@ -126,8 +126,7 @@ static fixed fixisqrt(fixed v)
 	return fixdiv(0x10000, sq);
 }
 
-
-static fixed fixsin(fixed ang)
+fixed fixsin(fixed ang)
 {
 	int subang = ang&0xFF;
 	int quoang = (ang>>8)&0xFF;
@@ -138,13 +137,13 @@ static fixed fixsin(fixed ang)
 	return (v0*(256-subang) + v1*subang + (1<<5))>>6;
 }
 
-static fixed fixcos(fixed ang)
+fixed fixcos(fixed ang)
 {
 	return fixsin(ang + (FM_PI/2));
 }
 
 uint32_t randseed = 12342135; // keyboard mash
-static fixed fixrand1s(void)
+fixed fixrand1s(void)
 {
 	int r = (randseed>>7)&0x1FFFF;
 	randseed *= 1103515245U;

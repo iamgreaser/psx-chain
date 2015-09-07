@@ -1,3 +1,6 @@
+#include "common.h"
+#include "GL/intern.h"
+
 GLvoid glClearColorx(GLfixed r, GLfixed g, GLfixed b, GLfixed a)
 {
 	gl_clear_color_ub[0] = (r + (1<<7))>>8;

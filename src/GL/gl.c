@@ -1,4 +1,5 @@
-#include "GL/gl.h"
+#include "common.h"
+#include "GL/intern.h"
 
 // begin
 // note, we don't use alpha at all
@@ -25,7 +26,7 @@ GLboolean gl_enable_cull_face = GL_FALSE;
 GLboolean gl_enable_depth_test = GL_FALSE;
 
 // error
-static GLenum gl_error = GL_NO_ERROR;
+GLenum gl_error = GL_NO_ERROR;
 GLvoid gl_internal_set_error(GLenum error);
 
 // matrix
@@ -40,13 +41,4 @@ GLvoid gl_internal_flush_matrix(GLvoid);
 // viewport
 GLint   gl_vp_x = 0, gl_vp_y = 0;
 GLsizei gl_vp_w = 0, gl_vp_h = 0;
-
-#include "GL/begin.c"
-#include "GL/clear.c"
-#include "GL/draw.c"
-#include "GL/enable.c"
-#include "GL/error.c"
-#include "GL/matrix.c"
-#include "GL/viewport.c"
-
 

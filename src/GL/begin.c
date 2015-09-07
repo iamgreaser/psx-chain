@@ -1,3 +1,6 @@
+#include "common.h"
+#include "GL/intern.h"
+
 GLvoid glBegin(GLenum mode) // p24 2.6.1
 {
 	// Make sure we aren't already in a block

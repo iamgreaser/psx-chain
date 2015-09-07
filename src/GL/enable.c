@@ -1,3 +1,6 @@
+#include "common.h"
+#include "GL/intern.h"
+
 static GLvoid gl_internal_set_enabled(GLenum cap, GLboolean val)
 {
 	switch(cap)

@@ -66,6 +66,8 @@ typedef fixed GLclampx;
 // begin
 GLvoid glBegin(GLenum mode); // p24 2.6.1
 GLvoid glEnd(GLvoid); // p24 2.6.1
+GLvoid glColor3ub(GLubyte r, GLubyte g, GLubyte b);
+GLvoid glVertex3x(GLfixed x, GLfixed y, GLfixed z);
 
 // clear
 GLvoid glClearColorx(GLfixed r, GLfixed g, GLfixed b, GLfixed a);

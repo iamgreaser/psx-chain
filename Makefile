@@ -19,7 +19,11 @@ CFLAGS = -g -c -O3 -flto \
 
 # LTO seems to break ATM on -O2, -O3, -Os
 # but when posting every -f flag that -O2 uses it works?
+#LDFLAGS = -g -Wl,-T,link.ld -O1 -flto
+
 LDFLAGS = -g -Wl,-T,link.ld -O1 -flto \
+	\
+	-funroll-loops \
 	\
 	-fthread-jumps \
 	-falign-functions \

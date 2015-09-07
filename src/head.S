@@ -3,8 +3,8 @@
 
 	.ascii "PS-X EXE"
 	.word 0, 0
-	.word load_base, 0
-	.word aaa_very_start, _LOADABLE_SIZE
+	.word aaa_very_start, 0
+	.word load_base, _LOADABLE_SIZE
 	.word 0, 0
 	.word 0, 0
 	.word 0x801FFF00, 0
@@ -17,6 +17,7 @@
 	.align 11
 load_base:
 
+	.section ".text"
 aaa_very_start:
 	/* Load stack pointer */
 	/*lui $sp, 0x801F
@@ -76,7 +77,9 @@ int_handler:
 	mfc0 $a0, $12
 	mfc0 $a1, $13
 	mfc0 $a2, $14
+	addiu $sp, $sp, -32*4
 	jal isr_handler_c
+	addiu $sp, $sp, 32*4
 
 	/* Pop EPC */
 	lw $k0, 4*16($sp)

@@ -62,7 +62,7 @@ void aaa_start(void)
 
 	I_MASK = 0;
 
-	//memset((void *)(_BSS_START), 0, _BSS_END - _BSS_START);
+	memset((void *)(_BSS_START), 0, _BSS_END - _BSS_START);
 	memcpy((void *)0x80000080, int_handler_stub,
 		int_handler_stub_end - int_handler_stub);
 

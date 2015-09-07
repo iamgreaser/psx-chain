@@ -159,7 +159,9 @@ static void update_frame(void)
 	glBegin(GL_TRIANGLES);
 		glColor3ub(0x7F, 0x00, 0x00);
 		glVertex3x(-50, -50,  0);
+		glColor3ub(0x7F, 0x7F, 0x00);
 		glVertex3x( 50, -50,  0);
+		glColor3ub(0x7F, 0x00, 0x7F);
 		glVertex3x(  0,  50,  0);
 
 		glColor3ub(0x00, 0x7F, 0x00);

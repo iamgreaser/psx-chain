@@ -4,6 +4,7 @@
 // note, we don't use alpha at all
 static GLenum gl_begin_mode = 0;
 static GLint gl_begin_idx = 0;
+static GLint gl_begin_gourcount = 0;
 static uint32_t gl_begin_colcur = 0x00FFFFFF;
 static uint32_t gl_begin_texcur = 0x00000000;
 static uint32_t gl_begin_vtxbeg[2];

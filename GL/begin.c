@@ -53,6 +53,7 @@ GLvoid glEnd(GLvoid) // p24 2.6.1
 
 GLvoid glColor3ub(GLubyte r, GLubyte g, GLubyte b)
 {
+	gl_begin_gourcount = -1;
 	((uint8_t *)&gl_begin_colcur)[0] = r;
 	((uint8_t *)&gl_begin_colcur)[1] = g;
 	((uint8_t *)&gl_begin_colcur)[2] = b;
@@ -76,10 +77,15 @@ GLvoid glVertex3x(GLfixed x, GLfixed y, GLfixed z)
 	switch (gl_begin_mode)
 	{
 		case GL_TRIANGLES:
+			// Don't gouraud-shade if we changed colour just before the first point
+			if(gl_begin_gourcount == -1 && gl_begin_idx == 1)
+				gl_begin_gourcount = 0;
+
 			if(gl_begin_idx == 3)
 			{
 				gl_begin_idx = 0;
 				gl_internal_push_triangle(0, 1, 2);
+				gl_begin_gourcount = 0;
 			}
 			break;
 

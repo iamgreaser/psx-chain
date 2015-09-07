@@ -16,8 +16,8 @@ void yield(void);
 
 extern volatile uint8_t _BSS_START[];
 extern volatile uint8_t _BSS_END[];
-extern uint8_t int_handler_stub[];
-extern uint8_t int_handler_stub_end[];
+extern volatile uint32_t int_handler_stub[];
+extern volatile uint32_t int_handler_stub_end[];
 
 volatile int got_vblank = 0;
 int waiting_for_vblank = 0;
@@ -54,6 +54,8 @@ void isr_handler_c(uint32_t cop0_sr, uint32_t cop0_cause, uint32_t cop0_epc)
 	}
 }
 
+extern void aaa_nop_sled_cache_clearer(void);
+
 void aaa_start(void)
 {
 	volatile int fencer = 0;
@@ -62,9 +64,17 @@ void aaa_start(void)
 
 	I_MASK = 0;
 
+	// Clear cache
+	aaa_nop_sled_cache_clearer();
+
+	// Patch interrupt handler
+	((volatile uint32_t *)0x80000080)[0] = int_handler_stub[0];
+	((volatile uint32_t *)0x80000080)[1] = int_handler_stub[1];
+	((volatile uint32_t *)0x80000080)[2] = int_handler_stub[2];
+
+	fencer = 2;
+
 	memset((void *)(_BSS_START), 0, _BSS_END - _BSS_START);
-	memcpy((void *)0x80000080, int_handler_stub,
-		int_handler_stub_end - int_handler_stub);
 
 	fencer = 1;
 
@@ -82,9 +92,13 @@ void aaa_start(void)
 		/*
 		"\tsyscall\n"
 		"\tnop\n"
+		*/
+
+		/*
 		"\tsyscall\n"
 		"\tnop\n"
 		*/
+
 		:::"t0"
 	);
 
@@ -141,11 +155,15 @@ static void update_frame(void)
 
 	// Draw spinny triangle
 	//gpu_send_control_gp1(0x01000000);
-	int q = 60;
+	int q = 80;
 	for(i = 0; i < q; i++)
 	{
 		glPushMatrix();
-		glRotatex(((360*i)<<16)/q, 0, 0, 0x1000);
+		// TODO: exploit glGenLists, glNewList, glEndList, glCallList
+		// TODO: implement the damn things
+		// TODO: make said damn things precalculate a matrix (MVMVA should help)
+		// TODO: make malloc() behave so that display lists can make sense
+		glRotatex((((360<<12)*i)/q)<<4, 0, 0, 0x1000);
 		glTranslatex(0x80, 0, 0);
 		glRotatex(-tri_ang*360*3, 0, 0, 0x10000);
 		glRotatex(tri_ang*60, 0, 0x1000, 0);
@@ -254,6 +272,10 @@ static void update_frame(void)
 	screen_print(16, 16+8*9, 0x007F7F7F, update_str_buf);
 	sprintf(update_str_buf, "fra beg = %i", (int)tmr_frame);
 	screen_print(16, 16+8*7, 0x007F7F7F, update_str_buf);
+	//sprintf(update_str_buf, "malloc test = %p", NULL);//malloc(5));
+	//screen_print(16, 16+8*11, 0x007F7F7F, update_str_buf);
+	//sprintf(update_str_buf, "malloc test = %p", malloc(102));
+	//screen_print(16, 16+8*12, 0x007F7F7F, update_str_buf);
 	glFinish();
 
 	//while((GP1 & 0x10000000) == 0) {}

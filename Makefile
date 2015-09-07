@@ -9,9 +9,10 @@ MKISOFS=mkisofs
 
 ASFLAGS = -g -G0
 
-CFLAGS = -g -c -O3 -flto \
+CFLAGS = -g -c -O3 -flto -pipe \
 	-fomit-frame-pointer -fno-stack-protector -G0 \
-	-msoft-float -nostdlib -mips1 -march=3000 \
+	-mno-check-zero-division \
+	-msoft-float -nostdlib -mips1 -march=3000 -mtune=3000 \
 	-Isrc -Wall -Wextra \
 	-Wno-unused-variable -Wno-unused-function -Wno-pointer-sign \
 
@@ -21,7 +22,9 @@ CFLAGS = -g -c -O3 -flto \
 # but when posting every -f flag that -O2 uses it works?
 #LDFLAGS = -g -Wl,-T,link.ld -O1 -flto
 
-LDFLAGS = -g -Wl,-T,link.ld -O1 -flto \
+LDFLAGS = -g -Wl,-T,link.ld -O1 -flto -pipe \
+	-mtune=3000 -march=3000 \
+	\
 	\
 	-funroll-loops \
 	\

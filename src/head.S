@@ -17,24 +17,37 @@
 	.align 11
 load_base:
 
-	.section ".text"
+	/*.section ".text"*/
+	.global aaa_nop_sled_cache_clearer
+aaa_nop_sled_cache_clearer:
+	.rept 4096/4
+	nop
+	.endr
+	
+	jr $ra
+	nop
+
 aaa_very_start:
 	/* Load stack pointer */
 	/*lui $sp, 0x801F
-	ori $sp, $sp, 0xFF00*/
+	addiu $sp, $sp, 0xFF00*/
 
 	/* Load global pointer */
 	lui $gp, %hi(_gp)
-	ori $gp, $gp, %lo(_gp)
+	addiu $gp, $gp, %lo(_gp)
 
 	/* Call .init */
 	lui $t0, %hi(_INIT_SECTION)
-	ori $t0, $t0, %lo(_INIT_SECTION)
+	addiu $t0, $t0, %lo(_INIT_SECTION)
 	jalr $t0
 
 	/* Jump to start */
-	jal aaa_start
+	lui $t0, %hi(aaa_start)
+	addiu $t0, $t0, %lo(aaa_start)
+	addiu $sp, $sp, -32
+	jalr $t0
 	nop
+	addiu $sp, $sp, 32
 	j aaa_very_start
 	nop
 
@@ -42,7 +55,7 @@ aaa_very_start:
 	.global int_handler_stub_end
 int_handler_stub:
 	lui $k0, %hi(int_handler)
-	ori $k0, %lo(int_handler)
+	addiu $k0, $k0, %lo(int_handler)
 	jr $k0
 int_handler_stub_end:
 
@@ -77,9 +90,10 @@ int_handler:
 	mfc0 $a0, $12
 	mfc0 $a1, $13
 	mfc0 $a2, $14
-	addiu $sp, $sp, -32*4
+	addiu $sp, $sp, -32
 	jal isr_handler_c
-	addiu $sp, $sp, 32*4
+	nop
+	addiu $sp, $sp, 32
 
 	/* Pop EPC */
 	lw $k0, 4*16($sp)
@@ -136,6 +150,7 @@ fsys_rawcga:
 	.align 5
 	.global fsys_s3m_test
 fsys_s3m_test:
-	.incbin "dat/s2-cez.s3m"
+	/*.incbin "dat/s2-cez.s3m"*/
+	.incbin "s3ms/revelatn.s3m"
 	.align 5
 

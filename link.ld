@@ -41,8 +41,8 @@ SECTIONS
 	}
 	.eh_frame : { *(.eh_frame) }
 	.mdebug.abi32 : { KEEP(*(.mdebug.abi32)) }
+	_gp = ALIGN(16) + 0x7ff0;
 	.smain : ALIGN(1<<11) {
-		_gp = ALIGN(16) + 0x7ff0;
 		*(.scommon*)
 		*(.sdata*)
 		. = (. + 0x7FF) & ~ 0x7FF;

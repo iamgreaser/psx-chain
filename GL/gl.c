@@ -16,6 +16,12 @@ static uint32_t gl_begin_texbuf[4];
 // clear
 static GLubyte gl_clear_color_ub[4] = {0, 0, 0, 0};
 
+// draw
+GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2);
+
+// enable
+static GLboolean gl_enable_cull_face = 0;
+
 // error
 static GLenum gl_error = GL_NO_ERROR;
 GLvoid gl_internal_set_error(GLenum error);
@@ -26,7 +32,7 @@ static GLfixed gl_mat_rot[3][GLINTERNAL_MAX_MATRIX_STACK][9];
 static GLfixed gl_mat_trn[3][GLINTERNAL_MAX_MATRIX_STACK][3];
 static GLint gl_mat_stack[3] = {0, 0, 0};
 static GLint gl_mat_cur = 0;
-static GLboolean gl_mat_gte_isdirty = GLtrue;
+static GLboolean gl_mat_gte_isdirty = GL_TRUE;
 GLvoid gl_internal_flush_matrix(GLvoid);
 
 // viewport
@@ -35,6 +41,8 @@ static GLsizei gl_vp_w = 0, gl_vp_h = 0;
 
 #include "GL/begin.c"
 #include "GL/clear.c"
+#include "GL/draw.c"
+#include "GL/enable.c"
 #include "GL/error.c"
 #include "GL/matrix.c"
 #include "GL/viewport.c"

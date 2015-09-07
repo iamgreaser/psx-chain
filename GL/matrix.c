@@ -11,13 +11,16 @@ GLvoid gl_internal_flush_matrix(GLvoid)
 	gte_loadmat_gl(
 		gl_mat_rot[0][gl_mat_stack[0]],
 		gl_mat_trn[0][gl_mat_stack[0]]);
+
+	// Mark as clean
+	gl_mat_gte_isdirty = GL_FALSE;
 }
 
 GLvoid glLoadIdentity(GLvoid) // p35 2.9.2
 {
 	GLsizei i, j;
 
-	gl_mat_gte_isdirty = 1;
+	gl_mat_gte_isdirty = GL_TRUE;
 
 	GLint stackidx = gl_mat_stack[gl_mat_cur];
 	GLfixed *rot = gl_mat_rot[gl_mat_cur][stackidx];
@@ -49,7 +52,7 @@ GLvoid glRotatex(GLfixed theta, GLfixed x, GLfixed y, GLfixed z) // p35 2.9.2
 	if(x == 0 && y == 0 && z == 0)
 		return;
 
-	gl_mat_gte_isdirty = 1;
+	gl_mat_gte_isdirty = GL_TRUE;
 
 	// Normalise x,y,z
 	GLfixed vlen2 = fixmul(x,x) + fixmul(y,y) + fixmul(z,z);
@@ -136,7 +139,7 @@ GLvoid glTranslatex(GLfixed x, GLfixed y, GLfixed z) // p36 2.9.2
 {
 	int i, j;
 
-	gl_mat_gte_isdirty = 1;
+	gl_mat_gte_isdirty = GL_TRUE;
 
 	GLint stackidx = gl_mat_stack[gl_mat_cur];
 	GLfixed *rot = gl_mat_rot[gl_mat_cur][stackidx];
@@ -187,7 +190,7 @@ GLvoid glPopMatrix(GLvoid) // p37 2.9.2
 		return;
 	}
 
-	gl_mat_gte_isdirty = 1;
+	gl_mat_gte_isdirty = GL_TRUE;
 
 	// Pop
 	gl_mat_stack[gl_mat_cur]--;

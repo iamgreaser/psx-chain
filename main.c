@@ -135,6 +135,9 @@ static void update_frame(void)
 	volatile int lag;
 	int i;
 
+	// Enable things
+	glEnable(GL_CULL_FACE);
+
 	// Clear screen
 	glClearColorx(0x0000, 0x1D00, 0x1D00, 0x0000);
 	glClear(1);

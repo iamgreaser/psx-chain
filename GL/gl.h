@@ -24,6 +24,8 @@ typedef fixed GLclampx;
 
 #define GLtrue  1
 #define GLfalse 0
+#define GL_TRUE  1
+#define GL_FALSE 0
 
 // enum: 'E' errors (p22, 2.5 GL Errors, table 2.3)
 #define GL_NO_ERROR 0
@@ -33,6 +35,10 @@ typedef fixed GLclampx;
 #define GL_STACK_OVERFLOW 0x4504
 #define GL_STACK_UNDERFLOW 0x4505
 #define GL_OUT_OF_MEMORY 0x4506
+
+// enum: 'e' enableables (added as we find them)
+#define GL_NORMALIZE 0x6501 /* p38, 2.9.3 Normal Transformation */
+#define GL_CULL_FACE 0x6502 /* p72, 3.5.1 Basic Polygon Rasterization */
 
 // enum: 'M' matrices (p34, 2.9 Coordinate Transformations)
 // we are probably going to ignore GL_PROJECTION.
@@ -63,6 +69,12 @@ GLvoid glEnd(GLvoid); // p24 2.6.1
 // clear
 GLvoid glClearColorx(GLfixed r, GLfixed g, GLfixed b, GLfixed a);
 GLvoid glClear(GLbitfield mask);
+
+// draw
+
+// enable
+GLvoid glEnable(GLenum cap); // p38 2.9.3
+GLvoid glDisable(GLenum cap); // p38 2.9.3
 
 // error
 GLenum glGetError(GLvoid); // p20 2.5

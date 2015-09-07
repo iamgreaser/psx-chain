@@ -78,22 +78,6 @@ void gpu_push_vertex(int x, int y)
 	gpu_send_data((y<<16) | (x&0xFFFF));
 }
 
-static void screen_print(int x, int y, uint32_t c, const char *str)
-{
-	int i;
-
-	for(i = 0; str[i] != '\x00'; i++)
-	{
-		uint32_t ch = str[i];
-		gpu_send_control_gp0(0xE1080208 | ((ch>>5)));
-		gpu_draw_texmask(8, 8, (ch&31)<<3, 0);
-		gpu_send_control_gp0(0x74000000 | (c & 0x00FFFFFF));
-		gpu_push_vertex(i*8+x-160, y-120);
-		gpu_send_data(0x001C0000);
-	}
-
-}
-
 static void gpu_init(void)
 {
 	int i;

@@ -338,13 +338,13 @@ void f3m_player_init(player_s *player, mod_s *mod)
 		int lpend = (((ins->flags & 0x01) != 0) ? ins->lpend+1 : ins->len + 64);
 		// Ensure the loop actually fires
 		// Not sure if the assurance is really that good here!
-		if((ins->flags & 0x01) != 0 && lpend > ins->len-14)
+		if((ins->flags & 0x01) != 0 && lpend > (int)ins->len-14)
 			lpend = ins->len-14;
 
 		const uint8_t *data = ((void *)mod) + (para*16);
 		player->psx_spu_offset[i] = spu_offs;
 		player->psx_spu_offset_lpbeg[i] = spu_offs;
-		for(j = 0; j < 64000 && j < ins->len; j += 28, data += 28, spu_offs += (0x10>>3))
+		for(j = 0; j < 64000 && j < (int)ins->len; j += 28, data += 28, spu_offs += (0x10>>3))
 		{
 			// Load data
 			int src_min = smp_data_last;
@@ -352,7 +352,7 @@ void f3m_player_init(player_s *player, mod_s *mod)
 
 			for(k = 0; k < 28; k++)
 			{
-				int v = (j+k >= ins->len ? 0 : (((int)(data[k]))-0x80)<<8);
+				int v = (j+k >= (int)ins->len ? 0 : (((int)(data[k]))-0x80)<<8);
 				if(v < src_min) src_min = v;
 				if(v > src_max) src_max = v;
 				smp_src_buf[k] = v;
@@ -1021,6 +1021,8 @@ void f3m_sfx_play(player_s *player, int priority, const uint8_t *data, int len, 
 
 void f3m_player_play(player_s *player, int32_t *mbuf, uint8_t *obuf)
 {
+	(void)mbuf;
+	(void)obuf;
 	int i, j;
 
 	const int blen = F3M_BUFLEN;

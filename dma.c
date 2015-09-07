@@ -45,8 +45,8 @@ void dma_init(void)
 
 void dma_wait(void)
 {
-	while((DMA_n_CHCR(2) & 0x01000000) != 0) {}
 	while((GP1 & 0x10000000) == 0) {}
+	while((DMA_n_CHCR(2) & 0x01000000) != 0) {}
 }
 
 void dma_flush(void)
@@ -101,4 +101,29 @@ void dma_send_prim(uint32_t count, uint32_t *data, int32_t otz)
 	*/
 
 }
+
+static void screen_print(int x, int y, uint32_t c, const char *str)
+{
+	int i;
+
+	for(i = 0; str[i] != '\x00'; i++)
+	{
+		uint32_t ch = (uint32_t)(uint8_t)str[i];
+
+		// TODO: only do texpage once
+		uint32_t data[] = {
+			(0xE1080208 | ((ch>>5))),
+
+		//gpu_draw_texmask(8, 8, (ch&31)<<3, 0),
+			((0xE2<<24) | ((32-1)<<0) | ((32-1)<<5) | ((ch&0x1F)<<10) | (0<<15)),
+
+			(0x74000000 | (c & 0x00FFFFFF)),
+			(((i*8+x-160) & 0xFFFF) | ((y-120)<<16)),
+			(0x001C0000),
+		};
+
+		dma_send_prim(5, data, -1);
+	}
+}
+
 

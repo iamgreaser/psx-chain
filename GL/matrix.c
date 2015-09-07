@@ -68,6 +68,9 @@ GLvoid glRotatex(GLfixed theta, GLfixed x, GLfixed y, GLfixed z) // p35 2.9.2
 
 		// FIXME get this working correctly
 		vlen2 = x*x + y*y + z*z;
+		// Skip if we get 0
+		if(vlen2 == 0)
+			return;
 		GLfixed vlen = fixsqrt(vlen2)<<8;
 		x = fixdiv(x, vlen);
 		y = fixdiv(y, vlen);

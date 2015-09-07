@@ -8,6 +8,8 @@ GLvoid glClearColorx(GLfixed r, GLfixed g, GLfixed b, GLfixed a)
 
 GLvoid glClear(GLbitfield mask)
 {
+	(void)mask;
+
 	// TODO: read mask
 
 	uint32_t r = gl_clear_color_ub[0];

@@ -42,15 +42,15 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 
 	// Get results
 	// TODO: clip, z-order, etc
-	int16_t xy0[2], xy1[2], xy2[2];
+	int32_t xy0, xy1, xy2;
 	asm volatile(
 		"\tmfc2 %0, $12\n"
 		"\tmfc2 %1, $13\n"
 		"\tmfc2 %2, $14\n"
 		:
-		"=r"(*(uint32_t *)xy0),
-		"=r"(*(uint32_t *)xy1),
-		"=r"(*(uint32_t *)xy2)
+		"=r"(xy0),
+		"=r"(xy1),
+		"=r"(xy2)
 		::);
 
 	// Get Z order
@@ -71,9 +71,9 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 	if(gl_begin_gourcount != 0)
 	{
 		uint32_t data[] = {
-			((0x30<<24)|gl_begin_colbuf[i0]), (*(uint32_t *)xy0),
-			((0x00<<24)|gl_begin_colbuf[i1]), (*(uint32_t *)xy1),
-			((0x00<<24)|gl_begin_colbuf[i2]), (*(uint32_t *)xy2),
+			((0x30<<24)|gl_begin_colbuf[i0]), (xy0),
+			((0x00<<24)|gl_begin_colbuf[i1]), (xy1),
+			((0x00<<24)|gl_begin_colbuf[i2]), (xy2),
 		};
 
 		dma_send_prim(6, data, otz);
@@ -81,9 +81,9 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 	} else {
 		uint32_t data[] = {
 			((0x20<<24)|gl_begin_colbuf[i0]),
-			(*(uint32_t *)xy0),
-			(*(uint32_t *)xy1),
-			(*(uint32_t *)xy2),
+			(xy0),
+			(xy1),
+			(xy2),
 		};
 
 		dma_send_prim(4, data, otz);

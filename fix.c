@@ -122,7 +122,7 @@ static fixed fixisqrt(fixed v)
 	// TODO: Proper inverse square root
 	float sq = fixsqrt(v);
 	
-	if(sq == 0) sq = 1; // Prevent div-by-zero (yes, this crashes a PS1!)
+	if(sq == 0) sq = 1; // Prevent div-by-zero (gcc deliberately makes this crash!)
 	return fixdiv(0x10000, sq);
 }
 

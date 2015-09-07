@@ -150,16 +150,20 @@ static void update_frame(void)
 	glLoadIdentity();
 	glTranslatex(0, 0, 0x100);
 	glRotatex(tri_ang*360, 0, 0, 0x1000);
-	glTranslatex(0x80, 0, 0);
-	glRotatex(-tri_ang*360*3, 0, 0, 0x10000);
 	glRotatex(tri_ang*60, 0, 0x1000, 0);
-	glRotatex(tri_ang*200, 0, 0, 0x1000);
 	//glRotatex(0, 0, 0x10000, 0);
 
 	// Draw spinny triangle
 	//gpu_send_control_gp1(0x01000000);
-	for(i = 0; i < 3; i++)
+	int q = 40;
+	for(i = 0; i < q; i++)
 	{
+		glPushMatrix();
+		glRotatex(((360*i)<<16)/q, 0, 0, 0x1000);
+		glTranslatex(0x80, 0, 0);
+		glRotatex(-tri_ang*360*3, 0, 0, 0x10000);
+		glRotatex(tri_ang*60, 0, 0x1000, 0);
+		glRotatex(tri_ang*200, 0, 0, 0x1000);
 		glBegin(GL_TRIANGLES);
 			glColor3ub(0x7F, 0x00, 0x00);
 			glVertex3x(-50, -50,  0);
@@ -187,22 +191,19 @@ static void update_frame(void)
 			glColor3ub(0x00, 0x00, 0x00);
 			glVertex3x( 50, -50,  0);
 		glEnd();
-		glTranslatex(-0x40, 0, 0x20);
+		glPopMatrix();
 	}
 
 	tri_ang += FM_PI*2/180/2;
 
-	// Flush DMA
-	glFinish();
-
 	// Draw string
-	gpu_send_control_gp1(0x01000000);
+	//gpu_send_control_gp1(0x01000000);
 	uint8_t update_str_buf[64];
 	sprintf(update_str_buf, "ord=%02i row=%02i speed=%03i/%i"
-		, s3mplayer.cord
-		, s3mplayer.crow
-		, s3mplayer.tempo
-		, s3mplayer.speed
+		, (int)s3mplayer.cord
+		, (int)s3mplayer.crow
+		, (int)s3mplayer.tempo
+		, (int)s3mplayer.speed
 		);
 	screen_print(16, 16+8*0, 0x007F7F7F, update_str_buf);
 	screen_print(16, 16+8*1, 0x007F7F7F, s3mplayer.mod->name);
@@ -252,13 +253,15 @@ static void update_frame(void)
 			break;
 	}
 
-	sprintf(update_str_buf, "joypad=%04X (%04X: %s)", pad_data, pad_id, pad_id_str);
+	sprintf(update_str_buf, "joypad=%04X (%04X: %s)", (unsigned)pad_data, (unsigned)pad_id, pad_id_str);
 	screen_print(16, 16+8*3, 0x007F7F7F, update_str_buf);
-	sprintf(update_str_buf, "glGetError() = %X", glGetError());
+	sprintf(update_str_buf, "glGetError() = %X", (unsigned)glGetError());
 	screen_print(16, 16+8*5, 0x007F7F7F, update_str_buf);
 
-	while((GP1 & 0x10000000) == 0)
-		{}
+	// Flush DMA
+	glFinish();
+
+	//while((GP1 & 0x10000000) == 0) {}
 
 	// Flip pages
 	gpu_display_start(0, screen_buffer);
@@ -297,7 +300,7 @@ void update_music_status(int ins, int ins_num)
 
 	// Draw string
 	gpu_send_control_gp1(0x01000000);
-	const static uint8_t test_str[] = "Converting samples...";
+	static const uint8_t test_str[] = "Converting samples...";
 	for(i = 0; test_str[i] != '\x00'; i++)
 	{
 		uint32_t test_char = test_str[i];

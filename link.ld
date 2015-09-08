@@ -63,6 +63,11 @@ SECTIONS
 	_end = .;
 	end = .;
 	_BSS_END = .;
+
+	/* 1KB 1-cycle scratchpad */
+	.fastmem 0x1F800000 (NOLOAD) : {
+		*(.fastmem)
+	}
 	/* Include debug crap if necessary */
 	.debug 0 : { *(.debug) }
 	.debug_info 0 : { *(.debug_info) }

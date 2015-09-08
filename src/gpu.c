@@ -86,7 +86,7 @@ void gpu_init(void)
 {
 	int i;
 	int x, y;
-	volatile int k = 0;
+	static volatile int k = 0;
 
 	// Reset GPU 
 	gpu_send_control_gp1(0x00000000);

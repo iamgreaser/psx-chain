@@ -1,6 +1,8 @@
 This is my personal toolchain for developing PS1 code.
 
-Code and scripts are in the public domain EXCEPT iso2raw.c which is a modified mashup of two pieces of code and is in an unknown state. It is provided because it is VERY USEFUL.
+Code and scripts are in the public domain EXCEPT:
+* iso2raw.c which is a modified mashup of two pieces of code and is in an unknown state. It is provided because it is VERY USEFUL.
+* nullmon-part.c which uses a part of nullmon.c from newlib. It modifies `get_mem_info` to give the correct memory information so we can use more than 1MB of RAM. It is available under an attribution-style licence.
 
 rawcga.bin is the IBM CGA ROM font.
 

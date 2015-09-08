@@ -41,6 +41,11 @@ typedef fixed GLclampx;
 #define GL_CULL_FACE 0x6502 /* p72, 3.5.1 Basic Polygon Rasterization */
 #define GL_DEPTH_TEST 0x6503 /* p106, 4.15 Depth Buffer Test */
 
+// enum: 'L' list modes
+// p134, 5.4 Display Lists:
+#define GL_COMPILE 0x4C11
+#define GL_COMPILE_AND_EXECUTE 0x4C12
+
 // enum: 'M' matrices (p34, 2.9 Coordinate Transformations)
 // we are probably going to ignore GL_PROJECTION.
 #define GL_MODELVIEW 0x4D01
@@ -83,6 +88,12 @@ GLvoid glDisable(GLenum cap); // p38 2.9.3
 
 // error
 GLenum glGetError(GLvoid); // p20 2.5
+
+// list
+GLvoid glNewList(GLuint n, GLenum mode); // p134 5.4
+GLvoid glEndList(GLvoid); // p134 5.4
+GLvoid glCallList(GLuint n); // p134 5.4
+GLuint glGenLists(GLsizei s); // p134 5.4
 
 // matrix
 GLvoid glLoadIdentity(GLvoid); // p35 2.9.2

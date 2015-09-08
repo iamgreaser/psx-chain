@@ -25,7 +25,11 @@
 //define F3M_BUFLEN 273
 #endif
 #ifndef F3M_CHNS
+#ifdef TARGET_GBA
 #define F3M_CHNS 1
+#else
+#define F3M_CHNS 2
+#endif
 #endif
 #ifndef F3M_VCHNS
 #define F3M_VCHNS 20
@@ -234,7 +238,10 @@ void f3m_player_init(player_s *player, mod_s *mod)
 {
 	int i;
 
-	update_music_status(0, mod->ins_num);
+#ifdef TARGET_PSX
+	// Optional callback
+	//update_music_status(0, mod->ins_num);
+#endif
 
 	player->mod = mod;
 	player->modbase = (const void *)mod;
@@ -310,8 +317,10 @@ void f3m_player_init(player_s *player, mod_s *mod)
 	}
 
 	uint16_t spu_offs = 0x01000>>3;
-	uint16_t smp_data_buf[8];
-	int smp_src_buf[28];
+	__attribute__((section(".fastmem")))
+	static uint16_t smp_data_buf[8];
+	__attribute__((section(".fastmem")))
+	static int smp_src_buf[28];
 	int smp_data_last = 0;
 
 	// FIXME: mednafen will murder you if write your SPU loading code like this and from what I gather so will a real PSX - pcsxr laps it up w/o any issues for some reason
@@ -325,7 +334,7 @@ void f3m_player_init(player_s *player, mod_s *mod)
 
 	for(i = 0; i < 99 && i < mod->ins_num; i++)
 	{
-		update_music_status(i, mod->ins_num);
+		//update_music_status(i, mod->ins_num);
 		// TODO: subtly adjust samples so loops work properly
 
 		// Get instrument + check if valid
@@ -338,7 +347,7 @@ void f3m_player_init(player_s *player, mod_s *mod)
 		int lpend = (((ins->flags & 0x01) != 0) ? ins->lpend+1 : ins->len + 64);
 		// Ensure the loop actually fires
 		// Not sure if the assurance is really that good here!
-		if((ins->flags & 0x01) != 0 && lpend > (int)ins->len-14)
+		if((ins->flags & 0x01) != 0 && lpend > ((int)ins->len)-14)
 			lpend = ins->len-14;
 
 		const uint8_t *data = ((void *)mod) + (para*16);
@@ -1021,9 +1030,9 @@ void f3m_sfx_play(player_s *player, int priority, const uint8_t *data, int len, 
 
 void f3m_player_play(player_s *player, int32_t *mbuf, uint8_t *obuf)
 {
-	(void)mbuf;
-	(void)obuf;
 	int i, j;
+
+	(void)mbuf; (void)obuf; // hardware playback doesn't use these
 
 	const int blen = F3M_BUFLEN;
 

@@ -7,7 +7,7 @@
 	.word load_base, _LOADABLE_SIZE
 	.word 0, 0
 	.word 0, 0
-	.word 0x801FFF00, 0
+	.word 0x801FF000, 0
 	.word 0, 0
 
 	.word 0, 0
@@ -29,8 +29,13 @@ aaa_nop_sled_cache_clearer:
 
 aaa_very_start:
 	/* Load stack pointer */
-	/*lui $sp, 0x801F
-	addiu $sp, $sp, 0xFF00*/
+	/*
+	lui $sp, 0x801F+1
+	addiu $sp, $sp, 0xFF00
+	*/
+	/* SCRATCHPAD IS BESTPAD */
+	lui $sp, 0x1F80
+	addiu $sp, $sp, 0x0400
 
 	/* Load global pointer */
 	lui $gp, %hi(_gp)
@@ -60,12 +65,18 @@ int_handler_stub:
 int_handler_stub_end:
 
 int_handler:
+	/* Save SP and move to new location */
+	move $k1, $sp
+	lui $sp, 0x801F+1
+	addiu $sp, $sp, 0xF000
+
 	/* Push all the things */
-	addiu $sp, $sp, -19*4-64
+	addiu $sp, $sp, -20*4-64
 	.set noat
 	sw $1, 4*1($sp)
 	.set at
 	sw $ra, 4*0($sp)
+	sw $k1, 4*19($sp)
 	sw $2, 4*2($sp)
 	sw $3, 4*3($sp)
 	sw $4, 4*4($sp)
@@ -134,10 +145,12 @@ isr_handler_skip_offset:
 	lw $15, 4*15($sp)
 	lw $t8, 4*17($sp)
 	lw $t9, 4*18($sp)
+	lw $k1, 4*19($sp)
 	.set noat
 	lw $1, 4*1($sp)
 	.set at
 	addiu $sp, $sp, 19*4+64
+	move $sp, $k1
 	rfe /* assembler is currently set to reorder stuff into branch delay slot */
 	jr $k0
 	nop

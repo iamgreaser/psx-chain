@@ -29,6 +29,9 @@ GLboolean gl_enable_depth_test = GL_FALSE;
 GLenum gl_error = GL_NO_ERROR;
 GLvoid gl_internal_set_error(GLenum error);
 
+// list
+GLuint *gl_list_alloc[GLINTERNAL_MAX_LIST];
+
 // matrix
 #define GLINTERNAL_MAX_MATRIX_STACK 10
 GLfixed gl_mat_rot[3][GLINTERNAL_MAX_MATRIX_STACK][9];

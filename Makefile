@@ -74,8 +74,9 @@ LDFLAGS = -g -Wl,-T,link.ld -O1 -flto -pipe \
 	\
 	-msoft-float \
 	-L/usr/local/mipsel-none-elf/lib/soft-float/ \
-	-L/usr/local/lib/gcc/mipsel-none-elf/4.7.0/soft-float/ \
-	-lm -lc -lgcc -lnullmon
+	-L/usr/local/lib/gcc/mipsel-none-elf/4.7.0/soft-float/
+
+LIBS = -lm -lc -lgcc -lnullmon
 
 # stuff omitted:
 # O2:
@@ -93,6 +94,8 @@ INCLUDES = src/psx.h src/common.h src/GL/gl.h src/GL/intern.h
 
 OBJS = $(OBJDIR)/head.o \
 	\
+	$(OBJDIR)/nullmon-part.o \
+	\
 	$(OBJDIR)/dma.o \
 	$(OBJDIR)/fix.o \
 	$(OBJDIR)/gpu.o \
@@ -106,6 +109,7 @@ OBJS = $(OBJDIR)/head.o \
 	$(OBJDIR)/GL/draw.o \
 	$(OBJDIR)/GL/enable.o \
 	$(OBJDIR)/GL/error.o \
+	$(OBJDIR)/GL/list.o \
 	$(OBJDIR)/GL/matrix.o \
 	$(OBJDIR)/GL/viewport.o \
 	\
@@ -130,7 +134,7 @@ $(EXE_NAME).exe: $(OBJDIR)/$(EXE_NAME).elf
 	$(CROSS_OBJCOPY) -O binary $(OBJDIR)/$(EXE_NAME).elf $(EXE_NAME).exe
 
 $(OBJDIR)/$(EXE_NAME).elf: $(OBJS)
-	$(CROSS_CC) -o $(OBJDIR)/$(EXE_NAME).elf $(OBJS) $(LDFLAGS)
+	$(CROSS_CC) -o $(OBJDIR)/$(EXE_NAME).elf $(LDFLAGS) $(OBJS) $(LIBS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c $(INCLUDES)
 	$(CROSS_CC) -c -o $@ $(CFLAGS) $<

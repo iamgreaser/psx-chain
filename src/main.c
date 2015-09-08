@@ -58,7 +58,7 @@ extern void aaa_nop_sled_cache_clearer(void);
 
 void aaa_start(void)
 {
-	volatile int fencer = 0;
+	static volatile int fencer = 0;
 	(void)fencer;
 	int i;
 
@@ -129,52 +129,23 @@ void yield(void)
 }
 
 fixed tri_ang = 0;
+GLuint tri_dl0 = 0;
 int tmr_dmaend = 0;
 
-static void update_frame(void)
+static void draw_spinner(void)
 {
-	volatile int lag;
 	int i;
-
-	int tmr_frame = TMR_n_COUNT(1);
-
-	// Finish drawing
-	glFinish();
-
-	int tmr_dmafin = TMR_n_COUNT(1);
-
-	// Flip pages
-	gpu_display_start(0, screen_buffer);
-	screen_buffer = (screen_buffer == 0 ? 240 : 0);
-	gpu_draw_range(0, screen_buffer, 320, 240 + screen_buffer);
-	gpu_draw_offset(0 + 160, screen_buffer + 120);
-
-	// Enable things
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-
-	// Clear screen
-	glClearColorx(0x0000, 0x1D00, 0x1D00, 0x0000);
-	glClear(1);
-
-	// Set up camera matrix
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glTranslatex(0, 0, 0x100);
-	glRotatex(tri_ang, 0, 0, 0x1000);
-	glRotatex(tri_ang/6, 0, 0x1000, 0);
-	//glRotatex(0, 0, 0x10000, 0);
-
-	// Draw spinny simplex
-	//gpu_send_control_gp1(0x01000000);
 	int q = 100;
+
+	if(tri_dl0 == 0)
+		tri_dl0 = glGenLists(1);
+	glNewList(tri_dl0, GL_COMPILE);
 	for(i = 0; i < q; i++)
 	{
 		glPushMatrix();
 		// TODO: exploit glGenLists, glNewList, glEndList, glCallList
 		// TODO: implement the damn things
 		// TODO: make said damn things precalculate a matrix (MVMVA should help)
-		// TODO: make malloc() behave so that display lists can make sense
 		glRotatex((((1<<16)*i)/q), 0, 0, 0x1000);
 		glTranslatex(0x80, 0, 0);
 		glRotatex(-tri_ang*3, 0, 0, 0x10000);
@@ -209,6 +180,46 @@ static void update_frame(void)
 		glEnd();
 		glPopMatrix();
 	}
+}
+
+static void update_frame(void)
+{
+	static volatile int lag;
+	int i;
+
+	int tmr_frame = TMR_n_COUNT(1);
+
+	// Finish drawing
+	glFinish();
+
+	int tmr_dmafin = TMR_n_COUNT(1);
+
+	// Flip pages
+	gpu_display_start(0, screen_buffer);
+	screen_buffer = (screen_buffer == 0 ? 240 : 0);
+	gpu_draw_range(0, screen_buffer, 320, 240 + screen_buffer);
+	gpu_draw_offset(0 + 160, screen_buffer + 120);
+
+	// Enable things
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
+	// Clear screen
+	glClearColorx(0x0000, 0x1D00, 0x1D00, 0x0000);
+	glClear(1);
+
+	// Set up camera matrix
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glTranslatex(0, 0, 0x100);
+	glRotatex(tri_ang, 0, 0, 0x1000);
+	glRotatex(tri_ang/6, 0, 0x1000, 0);
+	//glRotatex(0, 0, 0x10000, 0);
+
+	// Draw spinny simplex
+	//gpu_send_control_gp1(0x01000000);
+	if(tri_dl0 == 0)
+		draw_spinner();
 
 	tri_ang += FM_PI*2/180/2;
 
@@ -223,6 +234,8 @@ static void update_frame(void)
 		);
 	screen_print(16, 16+8*0, 0x007F7F7F, update_str_buf);
 	screen_print(16, 16+8*1, 0x007F7F7F, s3mplayer.mod->name);
+	//sprintf(update_str_buf, "mtest=%p", malloc(5000));
+	//screen_print(16, 16+8*2, 0x007F7F7F, update_str_buf);
 
 	// Read joypad
 	pad_id   =  pad_id_now  ;
@@ -351,11 +364,20 @@ void update_music_status(int ins, int ins_num)
 	gpu_draw_offset(0 + 160, screen_buffer + 120);
 }
 
+void get_mem_info (void *mem);
 int main(void)
 {
 	int i;
-	volatile int k = 0;
+	static volatile int k = 0;
 	int x, y, xc, yc;
+
+	(void)k;
+
+	// KEEP get_mem_info
+	// this is so the optimiser doesn't destroy our function
+	uint32_t mem_tmp[3];
+	get_mem_info((void *)&mem_tmp);
+	k = mem_tmp[0];
 
 	// Reset GPU 
 	gpu_init();

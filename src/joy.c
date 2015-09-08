@@ -9,8 +9,7 @@ uint16_t pad_old_data = 0x0000;
 
 void joy_update(void)
 {
-	volatile int k;
-	volatile int lag;
+	static volatile int k;
 
 	k = JOY_RX_DATA;
 
@@ -53,7 +52,7 @@ void joy_update(void)
 
 void joy_poll(void)
 {
-	volatile int lag;
+	static volatile int lag;
 
 	if(pad_stage == 5 && (JOY_STAT & 0x0002) != 0)
 	//if((JOY_STAT & 0x0002) != 0)

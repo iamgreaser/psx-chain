@@ -41,6 +41,29 @@ aaa_very_start:
 	lui $gp, %hi(_gp)
 	addiu $gp, $gp, %lo(_gp)
 
+	/* Clear scratch */
+	la $t0, 0x1F800000
+	la $t1, 0x1F800400
+	_lp_clear_scratch:
+		sw $zero, ($t0)
+		nop
+		addiu $t0, $t0, 4
+		nop
+		bne $t0, $t1, _lp_clear_scratch
+
+	/* Clear BSS */
+	.extern _BSS_START
+	.extern _BSS_END
+	la $t0, _BSS_START
+	/*la $t1, _BSS_END*/
+	la $t1, 0x801FF000
+	_lp_clear_bss:
+		sw $zero, ($t0)
+		nop
+		addiu $t0, $t0, 4
+		nop
+		bne $t0, $t1, _lp_clear_bss
+
 	/* Call .init */
 	lui $t0, %hi(_INIT_SECTION)
 	addiu $t0, $t0, %lo(_INIT_SECTION)

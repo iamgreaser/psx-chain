@@ -74,7 +74,7 @@ void aaa_start(void)
 
 	fencer = 2;
 
-	memset((void *)(_BSS_START), 0, _BSS_END - _BSS_START);
+	//memset((void *)(_BSS_START), 0, _BSS_END - _BSS_START);
 
 	fencer = 1;
 
@@ -292,6 +292,8 @@ static void update_frame(void)
 	screen_print(16, 16+8*3, 0x007F7F7F, update_str_buf);
 	sprintf(update_str_buf, "glGetError() = %X", (unsigned)glGetError());
 	screen_print(16, 16+8*5, 0x007F7F7F, update_str_buf);
+	sprintf(update_str_buf, "sbrk(0) = %p", (void *)sbrk(0));
+	screen_print(16, 16+8*6, 0x007F7F7F, update_str_buf);
 	sprintf(update_str_buf, "dma end = %i", (int)tmr_dmaend);
 	screen_print(16, 16+8*7, 0x007F7F7F, update_str_buf);
 	sprintf(update_str_buf, "fra beg = %i", (int)tmr_frame);
@@ -384,6 +386,9 @@ int main(void)
 	uint32_t mem_tmp[3];
 	get_mem_info((void *)&mem_tmp);
 	k = mem_tmp[0];
+
+	// Disable DMA
+	DMA_DPCR &= ~0x08888888;
 
 	// Reset GPU 
 	gpu_init();

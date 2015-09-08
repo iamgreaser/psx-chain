@@ -119,6 +119,16 @@ GLvoid glEndList(GLvoid) // p134 5.4
 		return;
 	}
 
+	// Reduce list if possible
+	GLlist_s *newdl = realloc(gl_list_alloc[gl_list_cur-1],
+		sizeof(GLlist_s) + 
+		gl_list_alloc[gl_list_cur-1]->size*sizeof(uint32_t));
+	if(newdl != NULL)
+	{
+		gl_list_alloc[gl_list_cur-1] = newdl;
+		newdl->space = newdl->size;
+	}
+
 	// Backup index
 	GLuint n = gl_list_cur;
 	
@@ -155,6 +165,7 @@ GLvoid glCallList(GLuint n) // p134 5.4
 
 	if(n > GLINTERNAL_MAX_LIST
 		|| gl_list_alloc[n-1] == NULL
+		|| gl_list_alloc[n-1]->size == 0
 		|| gl_list_alloc[n-1]->space == 0)
 	{
 		// list has to be allocated, assumed

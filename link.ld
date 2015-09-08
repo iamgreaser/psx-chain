@@ -59,7 +59,7 @@ SECTIONS
 	.bss : {
 		*(.bss)
 	}
-	. = ALIGN(0x800);
+	. = ALIGN(0x1000);
 	_end = .;
 	end = .;
 	_BSS_END = .;

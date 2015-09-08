@@ -28,7 +28,16 @@ GLvoid gl_internal_set_error(GLenum error);
 
 // list
 #define GLINTERNAL_MAX_LIST 1024
-extern GLuint *gl_list_alloc[GLINTERNAL_MAX_LIST];
+typedef struct GLlist
+{
+	GLsizei size;
+	GLsizei space;
+	uint32_t data[];
+} GLlist_s;
+extern GLlist_s *gl_list_alloc[GLINTERNAL_MAX_LIST];
+extern GLuint gl_list_cur;
+extern GLenum gl_list_mode;
+GLvoid gl_internal_list_add(GLsizei count, GLsizei zcount, uint32_t *data);
 
 // matrix
 #define GLINTERNAL_MAX_MATRIX_STACK 10

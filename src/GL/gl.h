@@ -93,7 +93,7 @@ GLenum glGetError(GLvoid); // p20 2.5
 GLvoid glNewList(GLuint n, GLenum mode); // p134 5.4
 GLvoid glEndList(GLvoid); // p134 5.4
 GLvoid glCallList(GLuint n); // p134 5.4
-GLuint glGenLists(GLsizei s); // p134 5.4
+GLuint glGenLists(GLsizei s); // p137 5.4
 
 // matrix
 GLvoid glLoadIdentity(GLvoid); // p35 2.9.2

@@ -68,7 +68,7 @@ int_handler:
 	/* Save SP and move to new location */
 	move $k1, $sp
 	lui $sp, 0x801F+1
-	addiu $sp, $sp, 0xF000
+	addiu $sp, $sp, 0xFF00
 
 	/* Push all the things */
 	addiu $sp, $sp, -20*4-64

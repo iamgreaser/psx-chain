@@ -30,7 +30,9 @@ GLenum gl_error = GL_NO_ERROR;
 GLvoid gl_internal_set_error(GLenum error);
 
 // list
-GLuint *gl_list_alloc[GLINTERNAL_MAX_LIST];
+GLlist_s *gl_list_alloc[GLINTERNAL_MAX_LIST];
+GLuint gl_list_cur = 0;
+GLenum gl_list_mode = 0;
 
 // matrix
 #define GLINTERNAL_MAX_MATRIX_STACK 10

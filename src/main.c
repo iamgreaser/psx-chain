@@ -135,22 +135,18 @@ int tmr_dmaend = 0;
 static void draw_spinner(void)
 {
 	int i;
-	int q = 100;
+	int q = 200;
 
-	if(tri_dl0 == 0)
-		tri_dl0 = glGenLists(1);
-	glNewList(tri_dl0, GL_COMPILE);
 	for(i = 0; i < q; i++)
 	{
 		glPushMatrix();
-		// TODO: exploit glGenLists, glNewList, glEndList, glCallList
-		// TODO: implement the damn things
-		// TODO: make said damn things precalculate a matrix (MVMVA should help)
 		glRotatex((((1<<16)*i)/q), 0, 0, 0x1000);
 		glTranslatex(0x80, 0, 0);
+		/*
 		glRotatex(-tri_ang*3, 0, 0, 0x10000);
 		glRotatex(tri_ang/6, 0, 0x1000, 0);
 		glRotatex(tri_ang/2, 0, 0, 0x1000);
+		*/
 		glBegin(GL_TRIANGLES);
 			glColor3ub(0x7F, 0x00, 0x00);
 			glVertex3x(-50, -50,  0);
@@ -218,8 +214,18 @@ static void update_frame(void)
 
 	// Draw spinny simplex
 	//gpu_send_control_gp1(0x01000000);
+#if 1
 	if(tri_dl0 == 0)
+	{
+		tri_dl0 = glGenLists(1);
+		glNewList(tri_dl0, GL_COMPILE);
 		draw_spinner();
+		glEndList();
+	}
+	glCallList(tri_dl0);
+#else
+	draw_spinner();
+#endif
 
 	tri_ang += FM_PI*2/180/2;
 

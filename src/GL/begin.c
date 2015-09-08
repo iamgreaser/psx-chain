@@ -64,6 +64,13 @@ GLvoid glColor3ub(GLubyte r, GLubyte g, GLubyte b)
 
 GLvoid glVertex3x(GLfixed x, GLfixed y, GLfixed z)
 {
+	// Make sure we are in a block
+	if(gl_begin_mode == 0)
+	{
+		gl_internal_set_error(GL_INVALID_OPERATION);
+		return;
+	}
+
 	uint32_t sxy = (((GLuint)(GLushort)y)<<16)|((GLuint)(GLushort)x);
 	uint32_t sz = (uint32_t)(GLint)(GLshort)z;
 

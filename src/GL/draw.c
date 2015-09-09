@@ -1,7 +1,7 @@
 #include "common.h"
 #include "GL/intern.h"
 
-GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
+GLboolean gl_internal_calc_triangle(int32_t *xyz0, int32_t *xyz1, int32_t *xyz2)
 {
 	// Flush matrix
 	gl_internal_flush_matrix();
@@ -15,23 +15,51 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 		"\tmtc2 %4, $4\n"
 		"\tmtc2 %5, $5\n"
 		: :
-		"r"(gl_begin_vtxbuf[i0][0]),
-		"r"(gl_begin_vtxbuf[i0][1]),
-		"r"(gl_begin_vtxbuf[i1][0]),
-		"r"(gl_begin_vtxbuf[i1][1]),
-		"r"(gl_begin_vtxbuf[i2][0]),
-		"r"(gl_begin_vtxbuf[i2][1])
+		"r"(xyz0[0]),
+		"r"(xyz0[1]),
+		"r"(xyz1[0]),
+		"r"(xyz1[1]),
+		"r"(xyz2[0]),
+		"r"(xyz2[1])
 		:);
-	
-	int32_t xy0, xy1, xy2;
-	int32_t z0 = 0;
-	int32_t z1 = 0;
-	int32_t z2 = 0;
 
+	
 	if(gl_list_cur == 0)
 	{
 		// RTPT
 		asm volatile ("\tcop2 0x0280030\n");
+
+		// Test for culling
+		if(gl_enable_cull_face && gl_list_cur != 0)
+		{
+			int32_t mac0;
+
+			// Get side
+			asm volatile (
+				"\tcop2 0x1400006\n" // NCLIP
+				"\tmfc2 %0, $24\n"
+				:
+				"=r"(mac0)
+				::);
+
+			// Apply back/frontface culling
+			if(mac0 < 0)
+				return GL_FALSE;
+		}
+
+		// Get results
+		// TODO: clip, etc
+		asm volatile(
+			"\tmfc2 %0, $12\n"
+			"\tmfc2 %1, $13\n"
+			"\tmfc2 %2, $14\n"
+			:
+			"=r"(xyz0[0]),
+			"=r"(xyz1[0]),
+			"=r"(xyz2[0])
+			::);
+
+		return GL_TRUE;
 
 	} else {
 		// ACTUALLY LOADS IR123
@@ -57,8 +85,8 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 			"=r"(mac01),
 			"=r"(mac02)
 			::);
-		xy0 = (mac00&0xFFFF)|(mac01<<16);
-		z0 = mac02;
+		xyz0[0] = (mac00&0xFFFF)|(mac01<<16);
+		xyz0[1] = mac02;
 
 		asm volatile ("\tcop2 0x0488012\n"); // MVMVA V1
 		asm volatile (
@@ -77,8 +105,8 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 			"=r"(mac11),
 			"=r"(mac12)
 			::);
-		xy1 = (mac10&0xFFFF)|(mac11<<16);
-		z1 = mac12;
+		xyz1[0] = (mac10&0xFFFF)|(mac11<<16);
+		xyz1[1] = mac12;
 
 		asm volatile ("\tcop2 0x0490012\n"); // MVMVA V2
 		asm volatile (
@@ -97,51 +125,30 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 			"=r"(mac21),
 			"=r"(mac22)
 			::);
-		xy2 = (mac20&0xFFFF)|(mac21<<16);
-		z2 = mac22;
+		xyz2[0] = (mac20&0xFFFF)|(mac21<<16);
+		xyz2[1] = mac22;
 
-		// TODO: fix things
-		/*
-		xy0 = gl_begin_vtxbuf[i0][0];
-		z0 = gl_begin_vtxbuf[i0][1];
-		xy1 = gl_begin_vtxbuf[i1][0];
-		z1 = gl_begin_vtxbuf[i1][1];
-		xy2 = gl_begin_vtxbuf[i2][0];
-		z2 = gl_begin_vtxbuf[i2][1];
-		*/
+		return GL_TRUE;
 	}
 
-	if(gl_enable_cull_face && gl_list_cur != 0)
-	{
-		int32_t mac0;
+}
 
-		// Get side
-		asm volatile (
-			"\tcop2 0x1400006\n" // NCLIP
-			"\tmfc2 %0, $24\n"
-			:
-			"=r"(mac0)
-			::);
+GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
+{
+	int32_t xyz0[2], xyz1[2], xyz2[2];
+	int32_t z0, z1, z2;
 
-		// Apply back/frontface culling
-		if(mac0 < 0)
-			return;
-	}
+	// Fill buffer
+	xyz0[0] = gl_begin_vtxbuf[i0][0];
+	xyz0[1] = gl_begin_vtxbuf[i0][1];
+	xyz1[0] = gl_begin_vtxbuf[i1][0];
+	xyz1[1] = gl_begin_vtxbuf[i1][1];
+	xyz2[0] = gl_begin_vtxbuf[i2][0];
+	xyz2[1] = gl_begin_vtxbuf[i2][1];
 
-	// Get results
-	// TODO: clip, etc
-	if(gl_list_cur == 0)
-	{
-		asm volatile(
-			"\tmfc2 %0, $12\n"
-			"\tmfc2 %1, $13\n"
-			"\tmfc2 %2, $14\n"
-			:
-			"=r"(xy0),
-			"=r"(xy1),
-			"=r"(xy2)
-			::);
-	}
+	// Calculate triangle
+	if(!gl_internal_calc_triangle(xyz0, xyz1, xyz2))
+		return;
 
 	// Get Z order
 	int32_t otz = -1;
@@ -166,12 +173,12 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 	if(gl_begin_gourcount != 0)
 	{
 		uint32_t data[] = {
-			((0x30<<24)|gl_begin_colbuf[i0]), (xy0),
-			((0x00<<24)|gl_begin_colbuf[i1]), (xy1),
-			((0x00<<24)|gl_begin_colbuf[i2]), (xy2),
-			(z0<<8)+1,
-			(z1<<8)+3,
-			(z2<<8)+5,
+			((0x30<<24)|gl_begin_colbuf[i0]), (xyz0[0]),
+			((0x00<<24)|gl_begin_colbuf[i1]), (xyz1[0]),
+			((0x00<<24)|gl_begin_colbuf[i2]), (xyz2[0]),
+			(xyz0[1]<<8)+1,
+			(xyz1[1]<<8)+3,
+			(xyz2[1]<<8)+5,
 		};
 
 		if(otz == -2)
@@ -182,12 +189,12 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 	} else {
 		uint32_t data[] = {
 			((0x20<<24)|gl_begin_colbuf[i0]),
-			(xy0),
-			(xy1),
-			(xy2),
-			(z0<<8)+1,
-			(z1<<8)+2,
-			(z2<<8)+3,
+			(xyz0[0]),
+			(xyz1[0]),
+			(xyz2[0]),
+			(xyz0[1]<<8)+1,
+			(xyz1[1]<<8)+2,
+			(xyz2[1]<<8)+3,
 		};
 
 		if(otz == -2)

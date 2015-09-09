@@ -137,8 +137,12 @@ static void draw_spinner(void)
 	int i;
 	int q = 200;
 
+	GLfixed gradual = 0x60000/q;
 	for(i = 0; i < q; i++)
 	{
+		glRotatex(-gradual*3, 0, 0, 0x10000);
+		glRotatex(gradual/6, 0, 0x1000, 0);
+		glRotatex(gradual, 0x1000, 0, 0x1000);
 		glPushMatrix();
 		glRotatex((((1<<16)*i)/q), 0, 0, 0x1000);
 		glTranslatex(0x80, 0, 0);
@@ -231,7 +235,7 @@ static void update_frame(void)
 
 	// Draw string
 	//gpu_send_control_gp1(0x01000000);
-	uint8_t update_str_buf[64];
+	static uint8_t update_str_buf[64]; // don't want this using up scratch space
 	sprintf(update_str_buf, "ord=%02i row=%02i speed=%03i/%i"
 		, (int)s3mplayer.cord
 		, (int)s3mplayer.crow

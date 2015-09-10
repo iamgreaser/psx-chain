@@ -148,13 +148,27 @@ GLvoid glCallList(GLuint n) // p134 5.4
 {
 	GLsizei i;
 
+	// spec does say that you can glCallList recursively
+	//
+	// however, it places the glCallList command into the list
+	// rather than calling the list and adding its commands
+	//
+	// considering adding a glCallList list command w/ a supplied matrix.
+	// resulting list size would be smaller,
+	// potentially a bit slower than precalcing though.
+	//
+	// glCallList command encoding proposal:
+	// 6 words (12 hwords) for matrix
+	// 1 word for header w/ count=0, zcount=7, upper 16 bits = list ID
+	// 7 words total
+
+	/*
 	if(gl_list_cur != 0)
 	{
-		// cannot call while rendering, assumed?
-		// (i suspect you can but i cbf implementing that!)
 		gl_internal_set_error(GL_INVALID_OPERATION);
 		return;
 	}
+	*/
 
 	if(n == 0)
 	{
@@ -193,10 +207,15 @@ GLvoid glCallList(GLuint n) // p134 5.4
 		// Advance
 		i += count+zcount+1;
 
+#if 0
+		// Draw
+		// FIXME: SLOW
+		gl_internal_push_triangle_fromlist(count, plist, zlist);
+#else
 		// Skip if we're going to overflow
 		uint32_t pdata[14];
 		if(count >= 14)
-			continue;
+			return;
 
 		// Get values
 		int i0 = zlist[0]&0xFF;
@@ -269,7 +288,7 @@ GLvoid glCallList(GLuint n) // p134 5.4
 
 		// Get Z order
 		int32_t otz = -1;
-		if(gl_enable_depth_test)
+		if(gl_list_cur == 0 && gl_enable_depth_test)
 		{
 			// TODO: z-clip
 			// Get average Z
@@ -282,7 +301,14 @@ GLvoid glCallList(GLuint n) // p134 5.4
 		}
 
 		// Post
-		dma_send_prim(count, pdata, otz);
+		if(gl_list_cur != 0)
+		{
+			memcpy(pdata+count, zlist, sizeof(uint32_t)*3);
+			gl_internal_list_add(count, 3, pdata);
+		} else {
+			dma_send_prim(count, pdata, otz);
+		}
+#endif
 	}
 }
 

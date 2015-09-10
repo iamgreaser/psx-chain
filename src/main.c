@@ -135,7 +135,7 @@ int tmr_dmaend = 0;
 static void draw_spinner(void)
 {
 	int i;
-	int q = 200;
+	int q = 50;
 
 	GLfixed gradual = 0x60000/q;
 	for(i = 0; i < q; i++)
@@ -197,7 +197,7 @@ static void update_frame(void)
 	// Flip pages
 	gpu_display_start(0, screen_buffer);
 	screen_buffer = (screen_buffer == 0 ? 240 : 0);
-	gpu_draw_range(0, screen_buffer, 320, 240 + screen_buffer);
+	gpu_draw_range(0, screen_buffer, 319, 239 + screen_buffer);
 	gpu_draw_offset(0 + 160, screen_buffer + 120);
 
 	// Enable things
@@ -372,7 +372,7 @@ void update_music_status(int ins, int ins_num)
 	// Flip pages
 	gpu_display_start(0, screen_buffer);
 	screen_buffer = (screen_buffer == 0 ? 240 : 0);
-	gpu_draw_range(0, screen_buffer, 320, 240 + screen_buffer);
+	gpu_draw_range(0, screen_buffer, 319, 239 + screen_buffer);
 	gpu_draw_offset(0 + 160, screen_buffer + 120);
 }
 
@@ -397,6 +397,9 @@ int main(void)
 	// Reset GPU 
 	gpu_init();
 	dma_init();
+
+	// Steal GPU ranges for screen
+	glTexStealRangePSX(0, 0, 320*4, 240*2);
 
 	// Set up joypad
 	joy_init();

@@ -27,6 +27,55 @@ typedef fixed GLclampx;
 #define GL_TRUE  1
 #define GL_FALSE 0
 
+// enum: 'C' colour types for texture formats
+// taken from the GL 1.2 man pages
+#define GL_RED 0x4301
+#define GL_GREEN 0x4302
+#define GL_BLUE 0x4304
+#define GL_ALPHA 0x4308
+#define GL_LUMINANCE 0x4311
+#define GL_LUMINANCE4 0x4321
+#define GL_LUMINANCE8 0x4331
+#define GL_LUMINANCE12 0x4341
+#define GL_LUMINANCE16 0x4351
+#define GL_LUMINANCE_ALPHA 0x4319
+#define GL_LUMINANCE4_ALPHA4 0x4329
+#define GL_LUMINANCE6_ALPHA2 0x4339
+#define GL_LUMINANCE8_ALPHA8 0x4349
+#define GL_LUMINANCE12_ALPHA4 0x4359
+#define GL_LUMINANCE12_ALPHA12 0x4369
+#define GL_LUMINANCE16_ALPHA16 0x4379
+#define GL_INTENSITY 0x4312
+#define GL_INTENSITY4 0x4322
+#define GL_INTENSITY8 0x4332
+#define GL_INTENSITY12 0x4342
+#define GL_INTENSITY16 0x4352
+#define GL_RG 0x4313
+#define GL_RGB 0x4317
+#define GL_RGBA 0x431F
+#define GL_R3_G3_B2 0x4327
+#define GL_RGB4 0x4337
+#define GL_RGB5 0x4347
+#define GL_RGB8 0x4357
+#define GL_RGB10 0x4367
+#define GL_RGB12 0x4377
+#define GL_RGB16 0x4387
+#define GL_RGBA2 0x432F
+#define GL_RGBA4 0x433F
+#define GL_RGB5_A1 0x434F
+#define GL_RGBA8 0x435F
+#define GL_RGB10_A2 0x436F
+#define GL_RGBA12 0x437F
+#define GL_RGBA16 0x438F
+#define GL_COLOR_INDEX 0x4304
+
+// extension: GL_EXT_paletted_texture
+#define GL_COLOR_INDEX1_EXT 0x4314
+#define GL_COLOR_INDEX2_EXT 0x4324
+#define GL_COLOR_INDEX4_EXT 0x4334
+#define GL_COLOR_INDEX8_EXT 0x4344
+#define GL_COLOR_INDEX16_EXT 0x4354
+
 // enum: 'E' errors (p22, 2.5 GL Errors, table 2.3)
 #define GL_NO_ERROR 0
 #define GL_INVALID_ENUM 0x4501
@@ -40,6 +89,21 @@ typedef fixed GLclampx;
 #define GL_NORMALIZE 0x6501 /* p38, 2.9.3 Normal Transformation */
 #define GL_CULL_FACE 0x6502 /* p72, 3.5.1 Basic Polygon Rasterization */
 #define GL_DEPTH_TEST 0x6503 /* p106, 4.15 Depth Buffer Test */
+
+// enum: 'I' integer storage stuff (also includes floats)
+#define GL_BYTE 0x6908
+#define GL_UNSIGNED_BYTE 0x6988
+#define GL_SHORT 0x6910
+#define GL_UNSIGNED_SHORT 0x6990
+#define GL_INT 0x6920
+#define GL_UNSIGNED_INT 0x69A0
+#define GL_FLOAT 0x695F
+#define GL_DOUBLE 0x697F
+#define GL_BITMAP 0x6901
+// extension
+#define GL_NYBBLE_PSX 0x6904
+#define GL_UNSIGNED_NYBBLE_PSX 0x6984
+#define GL_FIXED_PSX 0x69DF
 
 // enum: 'L' list modes
 // p134, 5.4 Display Lists:
@@ -67,6 +131,9 @@ typedef fixed GLclampx;
 #define GL_QUADS 0x5040
 #define GL_QUAD_STRIP 0x5041
 #define GL_POLYGON 0x5070
+
+// enum: 'T' targets
+#define GL_TEXTURE_2D 0x5402
 
 // begin
 GLvoid glBegin(GLenum mode); // p24 2.6.1
@@ -102,6 +169,12 @@ GLvoid glRotatex(GLfixed theta, GLfixed x, GLfixed y, GLfixed z); // p35 2.9.2
 GLvoid glTranslatex(GLfixed x, GLfixed y, GLfixed z); // p36 2.9.2
 GLvoid glPushMatrix(GLvoid); // p37 2.9.2
 GLvoid glPopMatrix(GLvoid); // p37 2.9.2
+
+// tex
+GLvoid glTexStealRangePSX(GLuint x, GLuint y, GLuint w, GLuint h);
+GLvoid glTexImage2D(GLenum target, GLint level, GLint internalFormat,
+	GLsizei width, GLsizei height, GLint border,
+	GLenum format, GLenum type, const GLvoid *pixels);
 
 // viewport
 GLvoid glViewport(GLint x, GLint y, GLsizei w, GLsizei h); // p34 2.9.1

@@ -98,7 +98,7 @@ void gpu_init(void)
 	// Set display area 
 	//gpu_crtc_range(0x260, 0x88-(240/2), 320*8, 240); // NTSC
 	gpu_crtc_range(0x260, 0xA3-(240/2), 320*8, 239); // PAL
-	gpu_display_start(0, 8);
+	gpu_display_start(0, 0);
 
 	// Set display mode 
 	//gpu_send_control_gp1(0x08000001); // NTSC
@@ -107,7 +107,7 @@ void gpu_init(void)
 	// Set draw mode 
 	gpu_send_control_gp0(0xE6000000); gpu_send_control_gp0(0xE1000618); // Texpage
 	gpu_draw_texmask(32, 32, 0, 0);
-	gpu_draw_range(0, 0, 320, 240);
+	gpu_draw_range(0, 0, 319, 239);
 
 	// Copy CLUT to GPU
 	gpu_send_control_gp1(0x01000000);
@@ -144,6 +144,6 @@ void gpu_init(void)
 	gpu_send_data(0x00000000);
 	gpu_send_data((320) | ((240)<<16));
 	screen_buffer = 0;
-	gpu_display_start(0, screen_buffer + 8);
+	gpu_display_start(0, screen_buffer + 0);
 }
 

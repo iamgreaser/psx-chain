@@ -35,13 +35,17 @@ GLuint gl_list_cur = 0;
 GLenum gl_list_mode = 0;
 
 // matrix
-#define GLINTERNAL_MAX_MATRIX_STACK 10
 GLfixed gl_mat_rot[3][GLINTERNAL_MAX_MATRIX_STACK][9];
 GLfixed gl_mat_trn[3][GLINTERNAL_MAX_MATRIX_STACK][3];
 GLint gl_mat_stack[3] = {0, 0, 0};
 GLint gl_mat_cur = 0;
 GLboolean gl_mat_gte_isdirty = GL_TRUE;
 GLvoid gl_internal_flush_matrix(GLvoid);
+
+// tex
+GLuint gl_tex_bind2d = 0;
+GLtex_s gl_tex_handle[GLINTERNAL_MAX_TEX];
+GLshort gl_tex_map[64][512];
 
 // viewport
 GLint   gl_vp_x = 0, gl_vp_y = 0;

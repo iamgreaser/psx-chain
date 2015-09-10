@@ -17,6 +17,7 @@ extern GLubyte gl_clear_color_ub[4];
 
 // draw
 GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2);
+GLvoid gl_internal_push_triangle_fromlist(uint32_t count, uint32_t *data, uint32_t *zdata);
 
 // enable
 extern GLboolean gl_enable_cull_face;
@@ -40,13 +41,27 @@ extern GLenum gl_list_mode;
 GLvoid gl_internal_list_add(GLsizei count, GLsizei zcount, uint32_t *data);
 
 // matrix
-#define GLINTERNAL_MAX_MATRIX_STACK 10
+#define GLINTERNAL_MAX_MATRIX_STACK 16
 extern GLfixed gl_mat_rot[3][GLINTERNAL_MAX_MATRIX_STACK][9];
 extern GLfixed gl_mat_trn[3][GLINTERNAL_MAX_MATRIX_STACK][3];
 extern GLint gl_mat_stack[3];
 extern GLint gl_mat_cur;
 extern GLboolean gl_mat_gte_isdirty;
 extern GLvoid gl_internal_flush_matrix(GLvoid);
+
+// tex
+#define GLINTERNAL_MAX_TEX 1024
+typedef struct GLtex
+{
+	GLushort x, y;
+	GLushort w, h;
+	GLushort bits;
+	GLushort clut;
+	GLushort pad1[2];
+} GLtex_s;
+extern GLuint gl_tex_bind2d;
+extern GLtex_s gl_tex_handle[GLINTERNAL_MAX_TEX];
+extern GLshort gl_tex_map[64][512];
 
 // viewport
 extern GLint   gl_vp_x, gl_vp_y;

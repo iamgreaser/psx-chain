@@ -106,11 +106,13 @@ OBJS = $(OBJDIR)/head.o \
 	\
 	$(OBJDIR)/GL/begin.o \
 	$(OBJDIR)/GL/clear.o \
+	$(OBJDIR)/GL/ctab.o \
 	$(OBJDIR)/GL/draw.o \
 	$(OBJDIR)/GL/enable.o \
 	$(OBJDIR)/GL/error.o \
 	$(OBJDIR)/GL/list.o \
 	$(OBJDIR)/GL/matrix.o \
+	$(OBJDIR)/GL/tex.o \
 	$(OBJDIR)/GL/viewport.o \
 	\
 	$(OBJDIR)/main.o

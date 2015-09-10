@@ -203,7 +203,69 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 			dma_send_prim(4, data, otz);
 	}
 
-	// TODO: colours and textures and whatnot
+	// TODO: lights and textures and whatnot
+}
+
+GLvoid gl_internal_push_triangle_fromlist(uint32_t count, uint32_t *data, uint32_t *zdata)
+{
+	// FIXME THIS IS SLOW FOR SOME STUPID REASON
+	int32_t xyz0[2], xyz1[2], xyz2[2];
+	int32_t z0, z1, z2;
+
+	// Skip if we're going to overflow
+	uint32_t pdata[14];
+	if(count >= 14)
+		return;
+
+	// Get indices
+	int i0 = zdata[0]&0xFF;
+	int i1 = zdata[1]&0xFF;
+	int i2 = zdata[2]&0xFF;
+
+	// Fill buffer
+	xyz0[0] = data[i0];
+	xyz0[1] = zdata[0]>>8;
+	xyz1[0] = data[i1];
+	xyz1[1] = zdata[1]>>8;
+	xyz2[0] = data[i2];
+	xyz2[1] = zdata[2]>>8;
+
+	// Copy
+	memcpy(pdata, data, sizeof(uint32_t)*count);
+
+	// Calculate triangle
+	if(!gl_internal_calc_triangle(xyz0, xyz1, xyz2))
+		return;
+
+	// Overwrite
+	pdata[i0] = xyz0[0];
+	pdata[i1] = xyz1[0];
+	pdata[i2] = xyz2[0];
+
+	// Get Z order
+	int32_t otz = -1;
+	if(gl_list_cur != 0)
+	{
+		// Z order irrelevant at this point
+		// use a special marker for this
+		otz = -2;
+
+	} else if(gl_enable_depth_test) {
+		// TODO: z-clip
+		// Get average Z
+		asm volatile (
+			"\tcop2 0x158002D\n" // AVSZ3
+			"\tmfc2 %0, $7\n"
+			:
+			"=r"(otz)
+			::);
+	}
+
+	// Use what we have
+	if(otz == -2)
+		gl_internal_list_add(count, 3, pdata);
+	else
+		dma_send_prim(count, pdata, otz);
 }
 
 GLvoid glFlush(GLvoid) // p138, 5.5
@@ -216,5 +278,4 @@ GLvoid glFinish(GLvoid) // p138, 5.5
 	glFlush();
 	dma_wait();
 }
-
 

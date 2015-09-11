@@ -130,12 +130,13 @@ void yield(void)
 
 fixed tri_ang = 0;
 GLuint tri_dl0 = 0;
+GLuint tri_tex0 = (GLuint)-1;
 int tmr_dmaend = 0;
 
 static void draw_spinner(void)
 {
 	int i;
-	int q = 50;
+	int q = 200;
 
 	GLfixed gradual = 0x60000/q;
 	for(i = 0; i < q; i++)
@@ -185,7 +186,7 @@ static void draw_spinner(void)
 static void update_frame(void)
 {
 	static volatile int lag;
-	int i;
+	int x, y, i;
 
 	int tmr_frame = TMR_n_COUNT(1);
 
@@ -230,6 +231,23 @@ static void update_frame(void)
 #else
 	draw_spinner();
 #endif
+
+	if(tri_tex0 == (GLuint)-1)
+	{
+		glGenTextures(1, &tri_tex0);
+
+		// Generate XOR pattern
+		// (declare static - we don't have 32*32*2 bytes of scratchpad)
+		static uint16_t xor_pattern[32*32];
+
+		for(y = 0; y < 32; y++)
+		for(x = 0; x < 32; x++)
+			xor_pattern[y*32 + x] = (x^y)*0x0421 + 0x8000;
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5_A1,
+			32, 32, 0,
+			GL_RGBA, GL_UNSIGNED_SHORT, xor_pattern);
+	}
 
 	tri_ang += FM_PI*2/180/2;
 
@@ -400,6 +418,8 @@ int main(void)
 
 	// Steal GPU ranges for screen
 	glTexStealRangePSX(0, 0, 320*4, 240*2);
+	glTexStealRangePSX(512*4, 0, 512*4, 8);
+	glTexStealRangePSX(448*4, 0, 8, 8);
 
 	// Set up joypad
 	joy_init();

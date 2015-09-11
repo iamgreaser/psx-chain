@@ -19,7 +19,6 @@ GLvoid glTexStealRangePSX(GLuint x, GLuint y, GLuint w, GLuint h)
 }
 
 // using GL 1.1 man page specification
-#if 1
 GLvoid glTexImage2D(GLenum target, GLint level, GLint internalFormat,
 	GLsizei width, GLsizei height, GLint border,
 	GLenum format, GLenum type, const GLvoid *pixels)
@@ -95,6 +94,7 @@ GLvoid glTexImage2D(GLenum target, GLint level, GLint internalFormat,
 		&& format == GL_RGBA
 		&& type == GL_UNSIGNED_SHORT)
 	{
+		// XXX: type is probably not valid
 		gpubits = 16;
 		gpuwbits = 1;
 	}
@@ -104,32 +104,21 @@ GLvoid glTexImage2D(GLenum target, GLint level, GLint internalFormat,
 		return;
 	}
 
-	// Make sure we aren't trying to render to a blank texture
-	// Also make sure it's GL_TEXTURE_2D
-	// (We are NOT allowing people to write to texture 0)
+	// Make sure our target is GL_TEXTURE_2D
 	if(target != GL_TEXTURE_2D)
 	{
 		gl_internal_set_error(GL_INVALID_ENUM);
 		return;
 	}
-	if(gl_tex_bind2d)
-	{
-		gl_internal_set_error(GL_INVALID_OPERATION);
-		return;
-	}
 
 	// Work out the size of our region in 32-bit words
-	// We measure these as a bit count
 	int bitcw = width>>gpuwbits;
-	int bitch = height;
-
-	int bytcw = bitcw>>3;
-	int bytch = bitch>>3;
+	int bitch = height>>3;
 
 	// Check if we need to reallocate
 	// (w,h are in nybble tiles)
-	GLtex_s *tex = &gl_tex_handle[gl_tex_bind2d-1];
-	if(bytcw != tex->w && bytch != tex->h)
+	GLtex_s *tex = &gl_tex_handle[gl_tex_bind2d];
+	if(bitcw != tex->w && bitch != tex->h)
 	{
 		// Deallocate
 		// XXX: do we reallocate if we run out of memory?
@@ -148,13 +137,13 @@ GLvoid glTexImage2D(GLenum target, GLint level, GLint internalFormat,
 		// Find a range
 		// TODO: faster algorithm
 		GLboolean pass = GL_FALSE;
-		for(by = 0; by < (GLuint)( 64-bytch) && !pass; by++)
-		for(bx = 0; bx < (GLuint)(512-bytcw) && !pass; bx++)
+		for(by = 0; by < (GLuint)( 64-bitch) && !pass; by++)
+		for(bx = 0; bx < (GLuint)(512-bitcw) && !pass; bx++)
 		{
 			pass = GL_TRUE;
 
-			for(y = 0; y < (GLuint)bytch && pass; y++)
-			for(x = 0; x < (GLuint)bytcw; x++)
+			for(y = 0; y < (GLuint)bitch && pass; y++)
+			for(x = 0; x < (GLuint)bitcw; x++)
 			{
 				if(gl_tex_map[by+y][bx+x] != 0)
 				{
@@ -166,15 +155,15 @@ GLvoid glTexImage2D(GLenum target, GLint level, GLint internalFormat,
 			if(pass)
 			{
 				// Fill the range
-				for(y = 0; y < (GLuint)bytch && pass; y++)
-				for(x = 0; x < (GLuint)bytcw; x++)
+				for(y = 0; y < (GLuint)bitch && pass; y++)
+				for(x = 0; x < (GLuint)bitcw; x++)
 				{
-					gl_tex_map[by+y][bx+x] = gl_tex_bind2d;
+					gl_tex_map[by+y][bx+x] = 1;
 				}
 
 				// Set the texture parameters
-				tex->w = bytcw;
-				tex->h = bytch;
+				tex->w = bitcw;
+				tex->h = bitch;
 				tex->x = bx;
 				tex->y = by;
 				tex->clut = 0; // TODO
@@ -195,22 +184,79 @@ GLvoid glTexImage2D(GLenum target, GLint level, GLint internalFormat,
 	dma_wait();
 	gpu_send_control_gp0(0xA0000000);
 	gpu_push_vertex(tex->x*2, tex->y*8);
-	gpu_push_vertex( bytcw*2,  bytch*8);
+	gpu_push_vertex( bitcw*2,  bitch*8);
 
-	for(y = 0; y < (GLuint)bytch*8; y++)
-	for(x = 0; x < (GLuint)bytcw*2; x++)
+	for(y = 0; y < (GLuint)bitch*8; y++)
+	for(x = 0; x < (GLuint)bitcw*2; x++)
 	{
-		uint32_t v = 0;
-
-		for(i = 0; i < (GLuint)(1<<gpuwbits); i++)
-		{
-			v >>= (32>>gpuwbits);
-			v |= (*(uint16_t *)(pixels))<<(32-(32>>gpuwbits));
-			pixels += 2;
-		}
-
-		gpu_send_data(v);
+		gpu_send_data(*(uint32_t *)pixels);
+		pixels += 4;
 	}
 }
-#endif
+
+// using GL 1.1 man page specification - THIS IS A 1.1 FEATURE
+GLvoid glBindTexture(GLenum target, GLuint texture)
+{
+	// "GL_INVALID_OPERATION is generated if glBindTexture is executed  between
+	//  the execution of glBegin and the corresponding execution of glEnd."
+	//
+	// We are ignoring that sentence because this feature is useful
+	// and has a low overhead.
+
+	// no 1D (or 3D for that matter) texture support
+	if(target != GL_TEXTURE_2D)
+	{
+		gl_internal_set_error(GL_INVALID_ENUM);
+		return;
+	}
+
+	if(texture >= GLINTERNAL_MAX_TEX)
+	{
+		gl_internal_set_error(GL_INVALID_VALUE);
+		return;
+	}
+
+	gl_tex_bind2d = texture;
+}
+
+// using GL 1.1 man page specification - THIS IS A 1.1 FEATURE
+GLvoid glGenTextures(GLsizei n, GLuint *textures)
+{
+	GLsizei i;
+
+	// Make sure we aren't in a glBegin/glEnd block
+	if(gl_begin_mode != 0)
+	{
+		gl_internal_set_error(GL_INVALID_OPERATION);
+		return;
+	}
+
+	// n cannot be < 0
+	// But we've defined sizei as unsigned
+	// So by definition n cannot be < 0
+
+	for(i = 0; i < GLINTERNAL_MAX_TEX; i++)
+	{
+		if(gl_tex_handle[i].bits == 0)
+		{
+			// special marker to indicate we reserved this
+			// but not a valid value
+			gl_tex_handle[i].bits = 127;
+
+			// Report allocation
+			*textures = i;
+			n -= 1;
+			textures += 1;
+
+			// If we've allocated everything, all good!
+			if(n == 0)
+				return;
+		}
+
+	}
+
+	// OUT OF MEMORY
+	gl_internal_set_error(GL_OUT_OF_MEMORY);
+	return;
+}
 

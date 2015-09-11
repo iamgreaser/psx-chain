@@ -114,15 +114,16 @@ void gpu_init(void)
 	gpu_send_control_gp0(0xA0000000);
 	//gpu_send_data(0x01F70000);
 	gpu_send_data(0x000001C0);
-	gpu_send_data(0x00010002);
+	gpu_push_vertex(448, 0);
+	gpu_push_vertex(2, 1);
 	//gpu_send_data(0x7FFF0001);
 	gpu_send_data(0x7FFF0000);
 
 	// Copy font to GPU
 	gpu_send_control_gp1(0x01000000);
 	gpu_send_control_gp0(0xA0000000);
-	gpu_send_data(0x00000200);
-	gpu_send_data(0x00080200);
+	gpu_push_vertex(512, 0);
+	gpu_push_vertex(512, 8);
 
 	for(y = 0; y < 8; y++)
 	for(x = 0; x < 256; x++)

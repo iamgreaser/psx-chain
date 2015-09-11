@@ -24,6 +24,7 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2);
 // enable
 GLboolean gl_enable_cull_face = GL_FALSE;
 GLboolean gl_enable_depth_test = GL_FALSE;
+GLboolean gl_enable_texture_2d = GL_FALSE;
 
 // error
 GLenum gl_error = GL_NO_ERROR;
@@ -45,7 +46,7 @@ GLvoid gl_internal_flush_matrix(GLvoid);
 // tex
 GLuint gl_tex_bind2d = 0;
 GLtex_s gl_tex_handle[GLINTERNAL_MAX_TEX];
-GLshort gl_tex_map[64][512];
+GLbyte gl_tex_map[64][512];
 
 // viewport
 GLint   gl_vp_x = 0, gl_vp_y = 0;

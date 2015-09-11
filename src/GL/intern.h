@@ -22,6 +22,7 @@ GLvoid gl_internal_push_triangle_fromlist(uint32_t count, uint32_t *data, uint32
 // enable
 extern GLboolean gl_enable_cull_face;
 extern GLboolean gl_enable_depth_test;
+extern GLboolean gl_enable_texture_2d;
 
 // error
 extern GLenum gl_error;
@@ -61,7 +62,7 @@ typedef struct GLtex
 } GLtex_s;
 extern GLuint gl_tex_bind2d;
 extern GLtex_s gl_tex_handle[GLINTERNAL_MAX_TEX];
-extern GLshort gl_tex_map[64][512];
+extern GLbyte gl_tex_map[64][512];
 
 // viewport
 extern GLint   gl_vp_x, gl_vp_y;

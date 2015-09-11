@@ -75,6 +75,7 @@ typedef fixed GLclampx;
 #define GL_COLOR_INDEX4_EXT 0x4334
 #define GL_COLOR_INDEX8_EXT 0x4344
 #define GL_COLOR_INDEX16_EXT 0x4354
+#define GL_COLOR_INDEX12_EXT 0x4384
 
 // enum: 'E' errors (p22, 2.5 GL Errors, table 2.3)
 #define GL_NO_ERROR 0
@@ -175,6 +176,8 @@ GLvoid glTexStealRangePSX(GLuint x, GLuint y, GLuint w, GLuint h);
 GLvoid glTexImage2D(GLenum target, GLint level, GLint internalFormat,
 	GLsizei width, GLsizei height, GLint border,
 	GLenum format, GLenum type, const GLvoid *pixels);
+GLvoid glBindTexture(GLenum target, GLuint texture);
+GLvoid glGenTextures(GLsizei n, GLuint *textures);
 
 // viewport
 GLvoid glViewport(GLint x, GLint y, GLsizei w, GLsizei h); // p34 2.9.1

@@ -172,35 +172,76 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 	// Split into subtypes
 	if(gl_begin_gourcount != 0)
 	{
-		uint32_t data[] = {
-			((0x30<<24)|gl_begin_colbuf[i0]), (xyz0[0]),
-			((0x00<<24)|gl_begin_colbuf[i1]), (xyz1[0]),
-			((0x00<<24)|gl_begin_colbuf[i2]), (xyz2[0]),
-			(xyz0[1]<<8)+1,
-			(xyz1[1]<<8)+3,
-			(xyz2[1]<<8)+5,
-		};
+		if(gl_enable_texture_2d)
+		{
+			uint32_t data[] = {
+				gl_begin_texmask,
+				((0x34<<24)|gl_begin_colbuf[i0]), (xyz0[0]),
+				gl_begin_texbuf[i0]|gl_begin_texclut,
+				((0x00<<24)|gl_begin_colbuf[i1]), (xyz1[0]),
+				gl_begin_texbuf[i1]|gl_begin_texpage,
+				((0x00<<24)|gl_begin_colbuf[i2]), (xyz2[0]),
+				gl_begin_texbuf[i2],
+				(xyz0[1]<<8)+2,
+				(xyz1[1]<<8)+5,
+				(xyz2[1]<<8)+8,
+			};
 
-		if(otz == -2)
-			gl_internal_list_add(6, 3, data);
-		else
-			dma_send_prim(6, data, otz);
+			if(otz == -2)
+				gl_internal_list_add(10, 3, data);
+			else
+				dma_send_prim(10, data, otz);
+
+		} else {
+			uint32_t data[] = {
+				((0x30<<24)|gl_begin_colbuf[i0]), (xyz0[0]),
+				((0x00<<24)|gl_begin_colbuf[i1]), (xyz1[0]),
+				((0x00<<24)|gl_begin_colbuf[i2]), (xyz2[0]),
+				(xyz0[1]<<8)+1,
+				(xyz1[1]<<8)+3,
+				(xyz2[1]<<8)+5,
+			};
+
+			if(otz == -2)
+				gl_internal_list_add(6, 3, data);
+			else
+				dma_send_prim(6, data, otz);
+		}
 
 	} else {
-		uint32_t data[] = {
-			((0x20<<24)|gl_begin_colbuf[i0]),
-			(xyz0[0]),
-			(xyz1[0]),
-			(xyz2[0]),
-			(xyz0[1]<<8)+1,
-			(xyz1[1]<<8)+2,
-			(xyz2[1]<<8)+3,
-		};
+		if(gl_enable_texture_2d)
+		{
+			uint32_t data[] = {
+				gl_begin_texmask,
+				((0x34<<24)|((gl_begin_colbuf[i0]>>1)&0x7F7F7F)),
+				(xyz0[0]), gl_begin_texbuf[i0]|gl_begin_texclut,
+				(xyz1[0]), gl_begin_texbuf[i1]|gl_begin_texpage,
+				(xyz2[0]), gl_begin_texbuf[i2],
+				(xyz0[1]<<8)+2,
+				(xyz1[1]<<8)+4,
+				(xyz2[1]<<8)+6,
+			};
 
-		if(otz == -2)
-			gl_internal_list_add(4, 3, data);
-		else
-			dma_send_prim(4, data, otz);
+			if(otz == -2)
+				gl_internal_list_add(8, 3, data);
+			else
+				dma_send_prim(8, data, otz);
+		} else {
+			uint32_t data[] = {
+				((0x20<<24)|gl_begin_colbuf[i0]),
+				(xyz0[0]),
+				(xyz1[0]),
+				(xyz2[0]),
+				(xyz0[1]<<8)+1,
+				(xyz1[1]<<8)+2,
+				(xyz2[1]<<8)+3,
+			};
+
+			if(otz == -2)
+				gl_internal_list_add(4, 3, data);
+			else
+				dma_send_prim(4, data, otz);
+		}
 	}
 
 	// TODO: lights and textures and whatnot

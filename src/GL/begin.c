@@ -62,6 +62,12 @@ GLvoid glColor3ub(GLubyte r, GLubyte g, GLubyte b)
 	((uint8_t *)&gl_begin_colcur)[2] = b;
 }
 
+GLvoid glTexCoord2i(GLint s, GLint t)
+{
+	((uint8_t *)&gl_begin_texcur)[0] = (uint8_t)s;
+	((uint8_t *)&gl_begin_texcur)[1] = (uint8_t)t;
+}
+
 GLvoid glVertex3x(GLfixed x, GLfixed y, GLfixed z)
 {
 	// Make sure we are in a block

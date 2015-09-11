@@ -13,6 +13,10 @@ static GLvoid gl_internal_set_enabled(GLenum cap, GLboolean val)
 			gl_enable_depth_test = val;
 			break;
 
+		case GL_TEXTURE_2D:
+			gl_enable_texture_2d = val;
+			break;
+
 		default:
 			gl_internal_set_error(GL_INVALID_ENUM);
 			break;

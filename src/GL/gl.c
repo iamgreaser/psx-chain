@@ -14,6 +14,9 @@ uint32_t gl_begin_texbeg;
 uint32_t gl_begin_vtxbuf[4][2];
 uint32_t gl_begin_colbuf[4];
 uint32_t gl_begin_texbuf[4];
+uint32_t gl_begin_texclut;
+uint32_t gl_begin_texpage;
+uint32_t gl_begin_texmask;
 
 // clear
 GLubyte gl_clear_color_ub[4] = {0, 0, 0, 0};

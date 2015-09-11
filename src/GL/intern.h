@@ -11,6 +11,9 @@ extern uint32_t gl_begin_texbeg;
 extern uint32_t gl_begin_vtxbuf[4][2];
 extern uint32_t gl_begin_colbuf[4];
 extern uint32_t gl_begin_texbuf[4];
+extern uint32_t gl_begin_texclut;
+extern uint32_t gl_begin_texpage;
+extern uint32_t gl_begin_texmask;
 
 // clear
 extern GLubyte gl_clear_color_ub[4];

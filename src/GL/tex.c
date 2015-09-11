@@ -1,6 +1,51 @@
 #include "common.h"
 #include "GL/intern.h"
 
+GLboolean gl_internal_set_texture(GLuint texidx)
+{
+	GLtex_s *tex = &gl_tex_handle[texidx];
+
+	if(tex->bits == 127 || tex->w == 0)
+	{
+		// NOT A VALID TEXTURE
+		return GL_FALSE;
+	}
+
+	// Get values
+	uint32_t tx = tex->x*2;
+	uint32_t ty = tex->y*8;
+	uint32_t tw = tex->w*2;
+	uint32_t th = tex->h*8;
+	uint32_t bits = tex->bits;
+	uint32_t clut = tex->clut;
+
+	// Get texpage
+	gl_begin_texpage = (0<<5)|(1<<9)|(1<<10);
+	gl_begin_texpage |= ((tx>>6)&0x0F);
+	gl_begin_texpage |= ((ty>>8)&0x01)<<4;
+	if(bits == 8) gl_begin_texpage |= (1<<7);
+	else if(bits == 16) gl_begin_texpage |= (2<<7);
+	gl_begin_texpage <<= 16;
+
+	// Get clut
+	gl_begin_texclut = clut << 16;
+
+	// Recalculate
+	tx &= 0x3F;
+	ty &= 0xFF;
+	if(bits == 4)  { tx <<= 2; tw <<= 2; }
+	if(bits == 8)  { tx <<= 1; tw <<= 1; }
+
+	// Get mask
+	uint32_t mx = (tx>>3) & 0x1F;
+	uint32_t my = (ty>>3) & 0x1F;
+	uint32_t mw = ((256-tw)>>3) & 0x1F;
+	uint32_t mh = ((256-th)>>3) & 0x1F;
+	gl_begin_texmask = (0xE2<<24)|(mw<<0)|(mh<<5)|(mx<<10)|(my<<15);
+
+	return GL_TRUE;
+}
+
 // width is measured in nybbles
 GLvoid glTexStealRangePSX(GLuint x, GLuint y, GLuint w, GLuint h)
 {
@@ -187,11 +232,13 @@ GLvoid glTexImage2D(GLenum target, GLint level, GLint internalFormat,
 	gpu_push_vertex( bitcw*2,  bitch*8);
 
 	for(y = 0; y < (GLuint)bitch*8; y++)
-	for(x = 0; x < (GLuint)bitcw*2; x++)
+	for(x = 0; x < (GLuint)bitcw; x++)
 	{
 		gpu_send_data(*(uint32_t *)pixels);
 		pixels += 4;
 	}
+
+	gl_internal_set_texture(gl_tex_bind2d);
 }
 
 // using GL 1.1 man page specification - THIS IS A 1.1 FEATURE
@@ -217,6 +264,7 @@ GLvoid glBindTexture(GLenum target, GLuint texture)
 	}
 
 	gl_tex_bind2d = texture;
+	gl_internal_set_texture(gl_tex_bind2d);
 }
 
 // using GL 1.1 man page specification - THIS IS A 1.1 FEATURE

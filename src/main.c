@@ -153,29 +153,41 @@ static void draw_spinner(void)
 		glRotatex(tri_ang/2, 0, 0, 0x1000);
 		*/
 		glBegin(GL_TRIANGLES);
+			glTexCoord2i(0, 0);
 			glColor3ub(0x7F, 0x00, 0x00);
 			glVertex3x(-50, -50,  0);
+			glTexCoord2i(31, 0);
 			glColor3ub(0x7F, 0x7F, 0x00);
 			glVertex3x( 50, -50,  0);
+			glTexCoord2i(0, 31);
 			glColor3ub(0x7F, 0x00, 0x7F);
 			glVertex3x(  0,  50,  0);
 
+			glTexCoord2i(31, 31);
 			glColor3ub(0x00, 0x7F, 0x00);
 			glVertex3x(  0,   0, 70);
 			glColor3ub(0x7F, 0x7F, 0x00);
+			glTexCoord2i(31, 0);
 			glVertex3x( 50, -50,  0);
+			glTexCoord2i(0, 0);
 			glColor3ub(0x00, 0x7F, 0x7F);
 			glVertex3x(-50, -50,  0);
 
+			glTexCoord2i(31, 31);
 			glColor3ub(0x00, 0x00, 0x7F);
 			glVertex3x(  0,   0, 70);
+			glTexCoord2i(0, 0);
 			glVertex3x(-50, -50,  0);
+			glTexCoord2i(0, 31);
 			glColor3ub(0x00, 0x7F, 0x7F);
 			glVertex3x(  0,  50,  0);
 
+			glTexCoord2i(31, 31);
 			glColor3ub(0x7F, 0x7F, 0x7F);
 			glVertex3x(  0,   0, 70);
+			glTexCoord2i(0, 31);
 			glVertex3x(  0,  50,  0);
+			glTexCoord2i(31, 0);
 			glColor3ub(0x00, 0x00, 0x00);
 			glVertex3x( 50, -50,  0);
 		glEnd();
@@ -219,6 +231,8 @@ static void update_frame(void)
 
 	// Draw spinny simplex
 	//gpu_send_control_gp1(0x01000000);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tri_tex0);
 #if 1
 	if(tri_dl0 == 0)
 	{
@@ -231,23 +245,7 @@ static void update_frame(void)
 #else
 	draw_spinner();
 #endif
-
-	if(tri_tex0 == (GLuint)-1)
-	{
-		glGenTextures(1, &tri_tex0);
-
-		// Generate XOR pattern
-		// (declare static - we don't have 32*32*2 bytes of scratchpad)
-		static uint16_t xor_pattern[32*32];
-
-		for(y = 0; y < 32; y++)
-		for(x = 0; x < 32; x++)
-			xor_pattern[y*32 + x] = (x^y)*0x0421 + 0x8000;
-
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5_A1,
-			32, 32, 0,
-			GL_RGBA, GL_UNSIGNED_SHORT, xor_pattern);
-	}
+	glDisable(GL_TEXTURE_2D);
 
 	tri_ang += FM_PI*2/180/2;
 
@@ -417,6 +415,7 @@ int main(void)
 	dma_init();
 
 	// Steal GPU ranges for screen
+	// FIXME: confirm these
 	glTexStealRangePSX(0, 0, 320*4, 240*2);
 	glTexStealRangePSX(512*4, 0, 512*4, 8);
 	glTexStealRangePSX(448*4, 0, 8, 8);
@@ -430,6 +429,44 @@ int main(void)
 	SPU_CNT = 0xC000;
 	SPU_MVOL_L = 0x2000;
 	SPU_MVOL_R = 0x2000;
+
+	// Allocate textures if necessary
+	//if(tri_tex0 == (GLuint)-1)
+	{
+		glGenTextures(1, &tri_tex0);
+		glBindTexture(GL_TEXTURE_2D, tri_tex0);
+
+		// Generate XOR pattern
+		// (declare static - we don't have 32*32*2 bytes of scratchpad)
+		static uint16_t xor_pattern[32*32];
+
+		for(y = 0; y < 32; y++)
+		for(x = 0; x < 32; x++)
+			xor_pattern[y*32 + x] = (x^y)*0x0421 + 0x8000;
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5_A1,
+			32, 32, 0,
+			GL_RGBA, GL_UNSIGNED_SHORT, xor_pattern);
+	}
+
+	// Allocate texture if necessary
+	if(tri_tex0 == (GLuint)-1)
+	{
+		glGenTextures(1, &tri_tex0);
+		glBindTexture(GL_TEXTURE_2D, tri_tex0);
+
+		// Generate XOR pattern
+		// (declare static - we don't have 32*32*2 bytes of scratchpad)
+		static uint16_t xor_pattern[32*32];
+
+		for(y = 0; y < 32; y++)
+		for(x = 0; x < 32; x++)
+			xor_pattern[y*32 + x] = (x^y)*0x0421 + 0x8000;
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5_A1,
+			32, 32, 0,
+			GL_RGBA, GL_UNSIGNED_SHORT, xor_pattern);
+	}
 
 	waiting_for_vblank = got_vblank;
 	playing_music = 1;

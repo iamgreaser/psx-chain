@@ -131,6 +131,7 @@ void yield(void)
 fixed tri_ang = 0;
 GLuint tri_dl0 = 0;
 GLuint tri_tex0 = (GLuint)-1;
+GLuint pal_tex0 = (GLuint)-1;
 int tmr_dmaend = 0;
 
 static void draw_spinner(void)
@@ -268,6 +269,7 @@ static void update_frame(void)
 	pad_data = ~pad_data_now;
 	joy_poll();
 
+	/*
 	if(((pad_data&~pad_old_data) & PAD_RIGHT) != 0)
 	{
 		if(s3mplayer.cord > s3mplayer.mod->ord_num-2)
@@ -284,6 +286,7 @@ static void update_frame(void)
 		s3mplayer.crow=64;
 		s3mplayer.ctick = s3mplayer.speed;
 	}
+	*/
 
 	pad_old_data = pad_data;
 
@@ -430,42 +433,39 @@ int main(void)
 	SPU_MVOL_L = 0x2000;
 	SPU_MVOL_R = 0x2000;
 
-	// Allocate textures if necessary
-	//if(tri_tex0 == (GLuint)-1)
+	// Allocate palette
 	{
-		glGenTextures(1, &tri_tex0);
-		glBindTexture(GL_TEXTURE_2D, tri_tex0);
+		glGenTextures(1, &pal_tex0);
+		glBindTexture(GL_TEXTURE_2D, pal_tex0);
 
-		// Generate XOR pattern
-		// (declare static - we don't have 32*32*2 bytes of scratchpad)
-		static uint16_t xor_pattern[32*32];
-
-		for(y = 0; y < 32; y++)
+		static uint16_t palette[16*32];
+		for(y = 0; y < 16; y++)
 		for(x = 0; x < 32; x++)
-			xor_pattern[y*32 + x] = (x^y)*0x0421 + 0x8000;
+			palette[y*32+x] = (2*(15-(x&15))+1)*((x&16) != 0 ? 0x401 : 0x421);
 
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5_A1,
-			32, 32, 0,
-			GL_RGBA, GL_UNSIGNED_SHORT, xor_pattern);
+			32, 16, 0,
+			GL_RGBA, GL_UNSIGNED_SHORT, palette);
+
 	}
 
-	// Allocate texture if necessary
-	if(tri_tex0 == (GLuint)-1)
+	// Allocate texture
 	{
 		glGenTextures(1, &tri_tex0);
 		glBindTexture(GL_TEXTURE_2D, tri_tex0);
 
 		// Generate XOR pattern
 		// (declare static - we don't have 32*32*2 bytes of scratchpad)
-		static uint16_t xor_pattern[32*32];
+		static uint8_t xor_pattern[32*32];
 
 		for(y = 0; y < 32; y++)
 		for(x = 0; x < 32; x++)
-			xor_pattern[y*32 + x] = (x^y)*0x0421 + 0x8000;
+			xor_pattern[y*32 + x] = (x^y);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5_A1,
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_COLOR_INDEX,
 			32, 32, 0,
-			GL_RGBA, GL_UNSIGNED_SHORT, xor_pattern);
+			GL_COLOR_INDEX8_EXT, GL_UNSIGNED_BYTE, xor_pattern);
+		glBindClutPSX(pal_tex0, 0, 0);
 	}
 
 	waiting_for_vblank = got_vblank;

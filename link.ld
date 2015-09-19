@@ -3,11 +3,13 @@ OUTPUT_ARCH(mips);
 
 SECTIONS
 {
-	. = 0x80010800;
+	. = 0x80010000 - 0x800;
 	_LOADABLE_START_WHEAD = .;
 	.text : {
-		_ftext = . ;
 		*(.boot)
+		. = (. + 0x7FF) & 0xFFFFF800;
+		_LOADABLE_START = .;
+		_ftext = .;
 		*(.text.unlikely* .text.*_unlikely)
 		*(.text.exit*)
 		*(.text.startup*)
@@ -48,7 +50,8 @@ SECTIONS
 		. = (. + 0x7FF) & ~ 0x7FF;
 	} = 0x00000000
 	_LOADABLE_END = .;
-	_LOADABLE_SIZE = _LOADABLE_END - (_LOADABLE_START_WHEAD + 0x800);
+	/*_LOADABLE_SIZE = _LOADABLE_END - (_LOADABLE_START_WHEAD + 0x800);*/
+	_LOADABLE_SIZE = _LOADABLE_END - _LOADABLE_START;
 	_BSS_START = .;
 	_edata = .;
 	edata = .;

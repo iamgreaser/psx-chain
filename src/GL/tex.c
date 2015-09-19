@@ -121,15 +121,15 @@ GLvoid glTexImage2D(GLenum target, GLint level, GLint internalFormat,
 	// Now check if we have any valid formats
 	int gpubits;
 	int gpuwbits;
-	if(internalFormat == GL_COLOR_INDEX4_EXT
-		&& format == GL_COLOR_INDEX
+	if(internalFormat == GL_COLOR_INDEX
+		&& format == GL_COLOR_INDEX4_EXT
 		&& type == GL_UNSIGNED_NYBBLE_PSX)
 	{
 		gpubits = 4;
 		gpuwbits = 3;
 	}
-	else if(internalFormat == GL_COLOR_INDEX8_EXT
-		&& format == GL_COLOR_INDEX
+	else if(internalFormat == GL_COLOR_INDEX
+		&& format == GL_COLOR_INDEX8_EXT
 		&& type == GL_UNSIGNED_BYTE)
 	{
 		gpubits = 8;
@@ -182,8 +182,8 @@ GLvoid glTexImage2D(GLenum target, GLint level, GLint internalFormat,
 		// Find a range
 		// TODO: faster algorithm
 		GLboolean pass = GL_FALSE;
-		for(by = 0; by < (GLuint)( 64-bitch) && !pass; by++)
-		for(bx = 0; bx < (GLuint)(512-bitcw) && !pass; bx++)
+		for(by = 0; by < (GLuint)( 64-bitch) && !pass; by+=(GLuint)bitch)
+		for(bx = 0; bx < (GLuint)(512-bitcw) && !pass; bx+=(GLuint)bitcw)
 		{
 			pass = GL_TRUE;
 
@@ -211,7 +211,6 @@ GLvoid glTexImage2D(GLenum target, GLint level, GLint internalFormat,
 				tex->h = bitch;
 				tex->x = bx;
 				tex->y = by;
-				tex->clut = 0; // TODO
 				tex->bits = gpubits;
 			}
 		}
@@ -283,7 +282,7 @@ GLvoid glGenTextures(GLsizei n, GLuint *textures)
 	// But we've defined sizei as unsigned
 	// So by definition n cannot be < 0
 
-	for(i = 0; i < GLINTERNAL_MAX_TEX; i++)
+	for(i = 1; i < GLINTERNAL_MAX_TEX; i++)
 	{
 		if(gl_tex_handle[i].bits == 0)
 		{

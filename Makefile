@@ -133,7 +133,9 @@ $(ISO_NAME): $(EXE_NAME).exe
 	$(MKISOFS) -o $(ISO_NAME) system.cnf $(EXE_NAME).exe
 
 $(EXE_NAME).exe: $(OBJDIR)/$(EXE_NAME).elf
+	#$(CROSS_OBJCOPY) -O binary -j .text.head $(OBJDIR)/$(EXE_NAME).elf $(OBJDIR)/$(EXE_NAME).head
 	$(CROSS_OBJCOPY) -O binary $(OBJDIR)/$(EXE_NAME).elf $(EXE_NAME).exe
+	#$(CROSS_OBJCOPY) -O elf32-littlemips $(OBJDIR)/$(EXE_NAME).elf $(EXE_NAME).exe
 
 $(OBJDIR)/$(EXE_NAME).elf: $(OBJS)
 	$(CROSS_CC) -o $(OBJDIR)/$(EXE_NAME).elf $(LDFLAGS) $(OBJS) $(LIBS)

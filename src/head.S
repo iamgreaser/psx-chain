@@ -4,7 +4,8 @@
 	.ascii "PS-X EXE"
 	.word 0, 0
 	.word aaa_very_start, 0
-	.word load_base, _LOADABLE_SIZE
+	.extern _LOADABLE_START
+	.word _LOADABLE_START, _LOADABLE_SIZE
 	.word 0, 0
 	.word 0, 0
 	.word 0x801FF000, 0
@@ -14,10 +15,9 @@
 	.word 0
 	/*.ascii "Sony Computer Entertainment Inc. for North America area"*/
 	.ascii "Sony Computer Entertainment Inc. for Europe area"
-	.align 11
-load_base:
 
-	/*.section ".text"*/
+	.section ".text"
+load_base:
 	.global aaa_nop_sled_cache_clearer
 aaa_nop_sled_cache_clearer:
 	.rept 4096/4
@@ -29,13 +29,8 @@ aaa_nop_sled_cache_clearer:
 
 aaa_very_start:
 	/* Load stack pointer */
-	/*
-	lui $sp, 0x801F+1
-	addiu $sp, $sp, 0xFF00
-	*/
-	/* SCRATCHPAD IS BESTPAD */
-	lui $sp, 0x1F80
-	addiu $sp, $sp, 0x0400
+	/*la $sp, 0x801FC000*/
+	la $sp, 0x1F800400
 
 	/* Load global pointer */
 	lui $gp, %hi(_gp)
@@ -51,12 +46,17 @@ aaa_very_start:
 		nop
 		bne $t0, $t1, _lp_clear_scratch
 
-	/* Clear BSS */
+	/* Clear BSS + remaining heap */
 	.extern _BSS_START
 	.extern _BSS_END
 	la $t0, _BSS_START
 	/*la $t1, _BSS_END*/
 	la $t1, 0x801FF000
+	move $t3, $sp
+	blt $t1, $t3, _skip_clamping_sp
+	nop
+	move $t1, $t3
+	_skip_clamping_sp:
 	_lp_clear_bss:
 		sw $zero, ($t0)
 		nop
@@ -90,11 +90,10 @@ int_handler_stub_end:
 int_handler:
 	/* Save SP and move to new location */
 	move $k1, $sp
-	lui $sp, 0x801F+1
-	addiu $sp, $sp, 0xFF00
+	la $sp, 0x801FFFF0
 
 	/* Push all the things */
-	addiu $sp, $sp, -20*4-64
+	addiu $sp, $sp, -20*4
 	.set noat
 	sw $1, 4*1($sp)
 	.set at
@@ -172,7 +171,7 @@ isr_handler_skip_offset:
 	.set noat
 	lw $1, 4*1($sp)
 	.set at
-	addiu $sp, $sp, 19*4+64
+	addiu $sp, $sp, 19*4
 	move $sp, $k1
 	rfe /* assembler is currently set to reorder stuff into branch delay slot */
 	jr $k0
@@ -187,6 +186,6 @@ fsys_rawcga:
 	.global fsys_s3m_test
 fsys_s3m_test:
 	/*.incbin "dat/s2-cez.s3m"*/
-	.incbin "s3ms/wanderlu.s3m"
+	.incbin "s3ms/revelatn.s3m"
 	.align 5
 

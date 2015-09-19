@@ -147,6 +147,9 @@ GLvoid glVertex3x(GLfixed x, GLfixed y, GLfixed z);
 GLvoid glClearColorx(GLfixed r, GLfixed g, GLfixed b, GLfixed a);
 GLvoid glClear(GLbitfield mask);
 
+// ctab
+GLvoid glBindClutPSX(GLuint clut_texture, GLuint xoffs, GLuint yoffs);
+
 // draw
 GLvoid glFlush(GLvoid); // p138, 5.5
 GLvoid glFinish(GLvoid); // p138, 5.5

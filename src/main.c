@@ -438,13 +438,12 @@ int main(void)
 		glGenTextures(1, &pal_tex0);
 		glBindTexture(GL_TEXTURE_2D, pal_tex0);
 
-		static uint16_t palette[16*32];
-		for(y = 0; y < 16; y++)
-		for(x = 0; x < 32; x++)
-			palette[y*32+x] = (2*(15-(x&15))+1)*((x&16) != 0 ? 0x401 : 0x421);
+		static uint16_t palette[16*8];
+		for(x = 0; x < 16; x++)
+			palette[x] = (2*x+1)*0x421;
 
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5_A1,
-			32, 16, 0,
+			16, 8, 0,
 			GL_RGBA, GL_UNSIGNED_SHORT, palette);
 
 	}
@@ -456,15 +455,21 @@ int main(void)
 
 		// Generate XOR pattern
 		// (declare static - we don't have 32*32*2 bytes of scratchpad)
-		static uint8_t xor_pattern[32*32];
+		static uint8_t xor_pattern[64*32];
 
-		for(y = 0; y < 32; y++)
-		for(x = 0; x < 32; x++)
-			xor_pattern[y*32 + x] = (x^y);
+		memset(xor_pattern, 0, 64*32);
+
+		for(y = 0; y < 64; y++)
+		for(x = 0; x < 64; x++)
+		{
+			int v = x^y;
+			if(v>15) v = 31-v;
+			xor_pattern[y*32 + (x>>1)] |= v<<((x&1)*4);
+		}
 
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_COLOR_INDEX,
-			32, 32, 0,
-			GL_COLOR_INDEX8_EXT, GL_UNSIGNED_BYTE, xor_pattern);
+			64, 64, 0,
+			GL_COLOR_INDEX4_EXT, GL_UNSIGNED_NYBBLE_PSX, xor_pattern);
 		glBindClutPSX(pal_tex0, 0, 0);
 	}
 

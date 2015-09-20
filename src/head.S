@@ -186,6 +186,6 @@ fsys_rawcga:
 	.global fsys_s3m_test
 fsys_s3m_test:
 	/*.incbin "dat/s2-cez.s3m"*/
-	.incbin "s3ms/point.s3m"
+	.incbin "s3ms/haunted.s3m"
 	.align 5
 

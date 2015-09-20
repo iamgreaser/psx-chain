@@ -30,7 +30,7 @@ GLboolean gl_internal_calc_triangle(int32_t *xyz0, int32_t *xyz1, int32_t *xyz2)
 		asm volatile ("\tcop2 0x0280030\n");
 
 		// Test for culling
-		if(gl_enable_cull_face && gl_list_cur != 0)
+		if(gl_enable_cull_face && gl_list_cur == 0)
 		{
 			int32_t mac0;
 
@@ -213,7 +213,7 @@ GLvoid gl_internal_push_triangle(GLuint i0, GLuint i1, GLuint i2)
 		{
 			uint32_t data[] = {
 				gl_begin_texmask,
-				((0x34<<24)|((gl_begin_colbuf[i0]>>1)&0x7F7F7F)),
+				((0x24<<24)|((gl_begin_colbuf[i0]>>1)&0x7F7F7F)),
 				(xyz0[0]), gl_begin_texbuf[i0]|gl_begin_texclut,
 				(xyz1[0]), gl_begin_texbuf[i1]|gl_begin_texpage,
 				(xyz2[0]), gl_begin_texbuf[i2],

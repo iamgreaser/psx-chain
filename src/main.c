@@ -128,6 +128,15 @@ void yield(void)
 	// TODO: halt 
 }
 
+extern char _end[];
+void *_cur_brk = (void *)_end;
+void __attribute__((externally_visible)) *sbrk (intptr_t incr)
+{
+	void *ret = _cur_brk;
+	_cur_brk += incr;
+	return ret;
+}
+
 fixed tri_ang = 0;
 GLuint tri_dl0 = 0;
 GLuint tri_tex0 = (GLuint)-1;

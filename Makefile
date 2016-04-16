@@ -7,10 +7,10 @@ CROSS_OBJCOPY=$(CROSSPREFIX)objcopy
 RM_F=rm -f
 MKISOFS=mkisofs
 
-ASFLAGS = -g -G0
+ASFLAGS = -g -msoft-float
 
 CFLAGS = -g -c -O3 -flto -pipe \
-	-fomit-frame-pointer -fno-stack-protector -G0 \
+	-fomit-frame-pointer -fno-stack-protector \
 	-mno-check-zero-division \
 	-msoft-float -nostdlib -mips1 -march=3000 -mtune=3000 \
 	-Isrc -Wall -Wextra \
@@ -18,65 +18,16 @@ CFLAGS = -g -c -O3 -flto -pipe \
 
 #LDFLAGS = -g -O2 -flto \
 
-# LTO seems to break ATM on -O2, -O3, -Os
-# but when posting every -f flag that -O2 uses it works?
-#LDFLAGS = -g -Wl,-T,link.ld -O1 -flto
+#LDFLAGS = -g -O1 -flto -Wl,-T,newlink.ld -Wl,-Ttext-segment=0x8000F800 -pipe \
+#
 
-LDFLAGS = -g -Wl,-T,link.ld -O1 -flto -pipe \
+LDFLAGS = -g -O3 -flto -Wl,-T,link.ld -Wl,-Ttext-segment=0x8000F800 -pipe \
 	-mtune=3000 -march=3000 \
 	\
-	-funroll-loops \
-	\
-	-fthread-jumps \
-	-falign-functions \
-	-falign-jumps \
-	-falign-loops \
-	-falign-labels \
-	-fcaller-saves \
-	-fcrossjumping \
-	-fcse-follow-jumps \
-	-fcse-skip-blocks \
-	-fdelete-null-pointer-checks \
-	-fdevirtualize \
-	-fexpensive-optimizations \
-	-fgcse \
-	-fgcse-lm \
-	-finline-small-functions \
-	-findirect-inlining \
-	-fipa-cp \
-	-fipa-sra \
-	-foptimize-sibling-calls \
-	-foptimize-strlen \
-	-fpartial-inlining \
-	-fpeephole2 \
-	-freorder-blocks \
-	-freorder-blocks-and-partition \
-	-freorder-functions \
-	-frerun-cse-after-loop \
-	-fsched-interblock \
-	-fsched-spec \
-	-fschedule-insns \
-	-fschedule-insns2 \
-	-fstrict-aliasing \
-	-fstrict-overflow \
-	-ftree-builtin-call-dce \
-	-ftree-switch-conversion \
-	-ftree-tail-merge \
-	-ftree-pre \
-	-ftree-vrp \
-	\
-	-finline-functions \
-	-fpredictive-commoning \
-	-fgcse-after-reload \
-	-ftree-loop-distribute-patterns \
-	-ftree-slp-vectorize \
-	-fvect-cost-model \
-	\
 	-msoft-float \
-	-L/usr/local/mipsel-none-elf/lib/soft-float/ \
-	-L/usr/local/lib/gcc/mipsel-none-elf/4.7.0/soft-float/
+	-L/usr/local/mipsel-none-elf/lib/soft-float/
 
-LIBS = -lm -lc -lgcc -lnullmon
+LIBS = -lm -lc -lgcc
 
 # stuff omitted:
 # O2:

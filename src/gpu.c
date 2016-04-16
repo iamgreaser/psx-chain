@@ -113,7 +113,7 @@ void gpu_init(void)
 	gpu_send_control_gp1(0x01000000);
 	gpu_send_control_gp0(0xA0000000);
 	//gpu_send_data(0x01F70000);
-	gpu_send_data(0x000001C0);
+	//gpu_send_data(0x000001C0);
 	gpu_push_vertex(448, 0);
 	gpu_push_vertex(2, 1);
 	//gpu_send_data(0x7FFF0001);

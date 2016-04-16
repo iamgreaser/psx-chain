@@ -4,8 +4,9 @@
 	.ascii "PS-X EXE"
 	.word 0, 0
 	.word aaa_very_start, 0
-	.extern _LOADABLE_START
-	.word _LOADABLE_START, _LOADABLE_SIZE
+	.extern _ftext
+	.extern _LOADABLE_SIZE
+	.word _ftext, _LOADABLE_SIZE
 	.word 0, 0
 	.word 0, 0
 	.word 0x801FF000, 0
@@ -15,6 +16,7 @@
 	.word 0
 	/*.ascii "Sony Computer Entertainment Inc. for North America area"*/
 	.ascii "Sony Computer Entertainment Inc. for Europe area"
+	.word 0
 
 	.section ".text"
 load_base:
@@ -29,12 +31,11 @@ aaa_nop_sled_cache_clearer:
 
 aaa_very_start:
 	/* Load stack pointer */
-	/*la $sp, 0x801FC000*/
-	la $sp, 0x1F800400
+	la $sp, 0x801FC000
+	/*la $sp, 0x1F800400*/
 
 	/* Load global pointer */
-	lui $gp, %hi(_gp)
-	addiu $gp, $gp, %lo(_gp)
+	la $gp, _gp
 
 	/* Clear scratch */
 	la $t0, 0x1F800000
@@ -47,10 +48,10 @@ aaa_very_start:
 		bne $t0, $t1, _lp_clear_scratch
 
 	/* Clear BSS + remaining heap */
-	.extern _BSS_START
-	.extern _BSS_END
-	la $t0, _BSS_START
-	/*la $t1, _BSS_END*/
+	.extern _fbss
+	.extern _end
+	la $t0, _fbss
+	/*la $t1, _end*/
 	la $t1, 0x801FF000
 	move $t3, $sp
 	blt $t1, $t3, _skip_clamping_sp
@@ -65,6 +66,7 @@ aaa_very_start:
 		bne $t0, $t1, _lp_clear_bss
 
 	/* Call .init */
+	.extern _INIT_SECTION
 	lui $t0, %hi(_INIT_SECTION)
 	addiu $t0, $t0, %lo(_INIT_SECTION)
 	jalr $t0
@@ -186,6 +188,6 @@ fsys_rawcga:
 	.global fsys_s3m_test
 fsys_s3m_test:
 	/*.incbin "dat/s2-cez.s3m"*/
-	.incbin "s3ms/haunted.s3m"
+	.incbin "dat/s2-cez.s3m"
 	.align 5
 
